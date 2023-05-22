@@ -33,10 +33,13 @@ public class TransactionController {
     @PostMapping
     //Employee should be able to do transaction from any account
     //@PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
-    public CreateTransactionResponse makeTransaction(@RequestBody CreateTransactionDTO transaction) throws Exception {
+    public ResponseEntity<CreateTransactionResponse> makeTransaction(@RequestBody CreateTransactionDTO transaction) throws Exception {
         String token = request.getHeader("Authorization");
-        return transactionService.makeTransaction(transaction, token);
-
+        try{
+            return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(transactionService.makeTransaction(transaction, token));
+        }catch (Exception e){
+            throw  new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/{IBAN}")
