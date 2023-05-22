@@ -1,6 +1,7 @@
 package io.swagger.Controller;
 
 import io.swagger.Service.UserService;
+import io.swagger.annotations.ApiParam;
 import io.swagger.model.*;
 
 import io.swagger.model.DTOs.UpdateUserDTO;
@@ -28,12 +29,14 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
     public ResponseEntity<Iterable<User>> getAllUsers(@RequestParam(value = "offset", required = false) Integer offset,
-                                                     @RequestParam(value = "limit", required = false) Integer limit, @RequestParam(value = "filter", required = false) String filter) {
+                                                      @RequestParam(value = "limit", required = false) Integer limit, @ApiParam(required = false, allowableValues = "WITHOUT_ACCOUNTS, WITH_ACCOUNTS", value = "Available values : WITH_ACCOUNT, WITHOUT_ACCOUNT\n" +
+            "\n" +
+            "Default value : WITH_ACCOUNT\n") String filter) {
         List<User> filteredUsers = new ArrayList<>();
         if (request.getParameter("filter") != null) {
-            if (filter.equals("withAccount")) {
+            if (filter.equals("WITH_ACCOUNTS")) {
                 filteredUsers.addAll(userService.getAllUsers());
-            } else if (filter.equals("withoutAccount")) {
+            } else if (filter.equals("WITHOUT_ACCOUNTS")) {
                 filteredUsers.addAll(userService.getAllUsersWithNoAccount());
             }
         }
