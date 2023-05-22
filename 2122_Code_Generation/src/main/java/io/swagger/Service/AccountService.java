@@ -1,0 +1,150 @@
+package io.swagger.Service;
+
+
+import io.swagger.Repository.AccountRepository;
+import io.swagger.Repository.UserRepository;
+import io.swagger.model.Account;
+import io.swagger.model.DTOs.CreateAccountDTO;
+import io.swagger.model.DTOs.UpdateAccountDTO;
+import io.swagger.model.Enums.AccountStatus;
+import io.swagger.model.Enums.AccountType;
+import io.swagger.model.Enums.UserStatus;
+import io.swagger.model.User;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Service
+@AllArgsConstructor
+public class AccountService {
+
+    private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
+
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    } // TODO: 5/19/2023 Add filtering
+
+    public Account AddAccount(CreateAccountDTO accountDto) throws Exception {
+        Optional<User> user = userRepository.findById(accountDto.getId());
+
+        if (!user.isPresent()) {
+            throw new Exception("User was not found");
+        }else {
+            AccountType account_Type = accountDto.getAccountType();
+            if (account_Type == null) {
+                throw new Exception("account type can not be null");
+            }
+                Account account = new Account();
+                account.setIBANNo(generateRandomIBAN());
+                account.setBalance(0);
+                account.setAbsoluteLimit(5000);
+                account.setTransactionLimit(3000);
+                account.setDateOfOpening(LocalDateTime.now());
+                account.setAccountType(accountDto.getAccountType());
+                account.setAccountStatus(AccountStatus.ACTIVE);
+                account.setDayLimit(1000);
+                accountRepository.save(account);
+
+                user.get().setStatus(UserStatus.ACTIVE);
+                user.get().getAccounts().add(account);
+                userRepository.save(user.get());
+                return account;
+        }
+
+    }
+
+    public void updateAccount(UUID id, UpdateAccountDTO accountDto) throws Exception { // TODO: 5/19/2023 Just like in this method, handle exceptions too
+        Optional<Account> a = accountRepository.findById(id);
+        if (a.isPresent()) {
+            a.get().setAccountStatus(accountDto.getAccountStatus());
+            a.get().setAccountType(accountDto.getAccountType());
+            a.get().setAbsoluteLimit(accountDto.getAbsoluteLimit());
+            a.get().setTransactionLimit(accountDto.getTransactionLimit());
+            a.get().setDayLimit(accountDto.getDayLimit());
+            accountRepository.save(a.get());
+        } else {
+            throw new Exception("account was not found");
+        }
+
+    }
+
+    public Optional<Account> findAccountById(UUID id) throws Exception {
+
+        Optional<Account> account =  accountRepository.findById(id);
+        if(!account.isPresent()){
+            throw new Exception("account was not found");
+        }
+        return  account;
+    }
+
+    public void deleteAccount(UUID id) throws Exception {
+        Optional<Account> a = accountRepository.findById(id);
+        if (a.isPresent()) {
+            a.get().setAccountStatus(AccountStatus.CLOSED);
+            accountRepository.save(a.get());
+        } else {
+            throw new Exception("account was not found");
+        }
+
+    }
+
+    public String balanceCheck(UUID userId,String IBAN) throws Exception{
+
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isPresent()){
+            for (Account account : user.get().getAccounts()){
+                if(account.getIBANNo().equals(IBAN)){
+                    return "Your Account Balance is: " + account.getBalance();
+                }
+            }
+        }
+        throw new Exception("Account was not found");
+    }
+
+    public List<String> findIbansByFirstNameAndPhoneNumber(String name, String mobileNumber) throws Exception {
+
+        StringBuilder IBAN = new StringBuilder();
+        Optional<User> user = userRepository.findByFirstNameAndMobileNumber(name, mobileNumber);
+        List<String> ibans = new ArrayList<>();
+        if(user.isPresent()){
+            throw  new Exception("No User Found");
+        }
+        for( Account accounts : user.get().getAccounts()){
+            IBAN.append("IBAN: ").append(accounts.getIBANNo());
+            ibans.add(IBAN.toString());
+        }
+
+        return ibans;
+    }
+    public String generateRandomIBAN() {
+        StringBuilder iban = new StringBuilder("NL");
+
+        Random random = new Random();
+
+        // Generate random digits for the next four digits
+        for (int i = 0; i < 2; i++) {
+            iban.append(random.nextInt(10));
+        }
+
+        // Add bank name
+        iban.append("INGB");
+
+        // Generate random digits for the rest of the IBAN
+        iban.append(String.format("%010d", random.nextInt(1000000000)));
+        return iban.toString();
+    }
+
+    public List<Account> getAccountsByLimitAndOffset(int offset, int limit){
+        List<Account> allAccounts = accountRepository.findAll(); // Fetch all users from the data source
+        List<Account> accounts = new ArrayList<>();
+
+        int endIndex = Math.min(offset + limit, allAccounts.size());
+        if (offset < endIndex) {
+            accounts = allAccounts.subList(offset, endIndex);
+        }
+        return accounts;
+    }
+}
