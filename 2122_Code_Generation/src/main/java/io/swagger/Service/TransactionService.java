@@ -33,13 +33,13 @@ public class TransactionService {
     private final JwtTokenProvider jwtUtil;
 
 
-    public CreateTransactionResponse makeTransaction(CreateTransactionDTO transaction, String userName) throws Exception {
+    public CreateTransactionResponse makeTransaction(CreateTransactionDTO transaction, String token) throws Exception {
         if (transaction.getTransferAmount() <= 0) {
             throw new Exception("Amount should be greater than zero");
         }
 
-        Optional<User> user = userRepository.findByUserName(userName);
-        if (user.isPresent() || !user.get().getStatus().equals(UserStatus.ACTIVE)) {
+        Optional<User> user = Optional.ofNullable(jwtUtil.getUserFromToken(token));
+        if (!user.isPresent() || !user.get().getStatus().equals(UserStatus.ACTIVE)) {
             throw new Exception("User is not active");
         }
 
@@ -60,7 +60,7 @@ public class TransactionService {
         }
 
         Optional<Account> receiverAccount = accountRepository.findByIBANNo(transaction.getReceiverIban());
-        if (receiverAccount.isPresent() || !receiverAccount.get().getAccountStatus().equals(AccountStatus.ACTIVE)) {
+        if (!receiverAccount.isPresent() || !receiverAccount.get().getAccountStatus().equals(AccountStatus.ACTIVE)) {
             throw new Exception("Receiver account not found or not active");
         }
 
@@ -75,7 +75,7 @@ public class TransactionService {
                 .sum();
         long newTotalTransactions = totalTransactionsOfTheDay + transaction.getTransferAmount();
 
-        if (senderAccount.getBalance() - transaction.getTransferAmount() <= senderAccount.getAbsoluteLimit()) {
+        if (senderAccount.getBalance() - transaction.getTransferAmount() > senderAccount.getAbsoluteLimit()) {
             throw new Exception("Transfer amount exceeds absolute limit");
         }
 
@@ -103,7 +103,7 @@ public class TransactionService {
         CreateTransactionResponse transactionResponse = new CreateTransactionResponse();
         transactionResponse.setId(savedTransaction.getId());
         transactionResponse.setTransferAmount(savedTransaction.getTransferAmount());
-        transactionResponse.setUserName(userName);
+        transactionResponse.setUserName(user.get().getUserName());
         transactionResponse.setDateOfTransaction(savedTransaction.getDateOfTransaction());
 
         return transactionResponse;

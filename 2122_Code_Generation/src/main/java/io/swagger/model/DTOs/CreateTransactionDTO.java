@@ -1,9 +1,22 @@
 package io.swagger.model.DTOs;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class CreateTransactionDTO {
-    private String receiverIban;
+
+    @ApiModelProperty(value = "SenderIban", position = 1)
     private  String SenderIban;
+
+    @ApiModelProperty(value = "receiverIban", position = 2)
+    private String receiverIban;
     private long transferAmount;
+    public String getSenderIban() {
+        return SenderIban;
+    }
+
+    public void setSenderIban(String senderIban) {
+        SenderIban = senderIban;
+    }
 
     public String getReceiverIban() {
         return receiverIban;
@@ -13,13 +26,6 @@ public class CreateTransactionDTO {
         this.receiverIban = receiverIban;
     }
 
-    public String getSenderIban() {
-        return SenderIban;
-    }
-
-    public void setSenderIban(String senderIban) {
-        SenderIban = senderIban;
-    }
 
     public long getTransferAmount() {
         return transferAmount;

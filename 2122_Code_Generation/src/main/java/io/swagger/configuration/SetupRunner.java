@@ -40,10 +40,10 @@ public class SetupRunner implements ApplicationRunner {
 
     public void CreateDummyData(){
         Account bankAccount = Account.builder().IBANNo("NL82INGB4787393871").accountType(AccountType.CURRENT)
-                .balance(0).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).balance(500).build();
+                .balance(0).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
 
         Account userAccount = Account.builder().IBANNo("NL21INGB3487393870").accountType(AccountType.CURRENT)
-                .balance(0).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).balance(500).build();
+                .balance(0).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
 
         accountRepository.save(bankAccount);
         accountRepository.save(userAccount);

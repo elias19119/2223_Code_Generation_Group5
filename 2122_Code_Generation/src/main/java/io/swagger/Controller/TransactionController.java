@@ -28,7 +28,6 @@ import java.util.List;
 public class TransactionController {
 
   private final TransactionService transactionService;
-    private final JwtTokenProvider jwtUtil;
     private final HttpServletRequest request;
 
     @PostMapping
@@ -48,38 +47,50 @@ public class TransactionController {
         List<Transaction> filteredTransactions = new ArrayList<>();
         String accept = request.getHeader("Accept");
             //get transactions by IBAN by default
-        filteredTransactions.addAll(transactionService.findTransactionByIban(IBAN));
-        if (accept != null) {
-            if(request.getParameter("offset") != null && request.getParameter("limit") != null){
-                filteredTransactions.addAll(transactionService.getTransactionByLimitAndOffset(offset, limit));
-            }
-            if(amount != null && amount.longValue() > 0)
-            {
-                if(transactionService.transferAmountEquals(IBAN,amount).isEmpty()){
-                    throw new ApiRequestException("no transactions were found",HttpStatus.NOT_FOUND);
+        try {
+            filteredTransactions.addAll(transactionService.findTransactionByIban(IBAN));
+            if (accept != null) {
+                if(request.getParameter("offset") != null && request.getParameter("limit") != null){
+                    filteredTransactions.addAll(transactionService.getTransactionByLimitAndOffset(offset, limit));
                 }
-                filteredTransactions.addAll(transactionService.transferAmountEquals(IBAN,amount));
+                if(amount != null && amount.longValue() > 0)
+                {
+                    if(transactionService.transferAmountEquals(IBAN,amount).isEmpty()){
+                        throw new ApiRequestException("no transactions were found",HttpStatus.NOT_FOUND);
+                    }
+                    filteredTransactions.addAll(transactionService.transferAmountEquals(IBAN,amount));
+                }
+                if(request.getParameter("from") != null && request.getParameter("to") != null ){
+                    filteredTransactions.addAll(transactionService.findByIbanFromAndToDate(IBAN,to,from));
+                }
+                return new ResponseEntity<Iterable<Transaction>>(HttpStatus.ACCEPTED).status(200).body(filteredTransactions);
+
             }
-            if(request.getParameter("from") != null && request.getParameter("to") != null ){
-                filteredTransactions.addAll(transactionService.findByIbanFromAndToDate(IBAN,to,from));
-            }
-            return new ResponseEntity<Iterable<Transaction>>(HttpStatus.ACCEPTED).status(200).body(filteredTransactions);
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
 
         }
-
-        return new ResponseEntity<Iterable<Transaction>>(HttpStatus.BAD_REQUEST);
+        return null;
     }
 
 
     @PostMapping("/deposit")
-    public String deposit(@RequestBody DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {
-        return transactionService.depositMoney(depositToCheckingAccountDTO);
+    public ResponseEntity<String> deposit(@RequestBody DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {
+        try{
+            return new ResponseEntity<>(HttpStatus.OK).status(200).body(transactionService.depositMoney(depositToCheckingAccountDTO));
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/withdraw")
     public ResponseEntity<WithdrawMoneyResponse> withdraw(@RequestBody WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
-        WithdrawMoneyResponse withdrawMoneyResponse =  transactionService.withdrawMoney(withdrawMoneyDTO);
-        return new ResponseEntity<WithdrawMoneyResponse>(HttpStatus.ACCEPTED).status(200).body(withdrawMoneyResponse);
+        try {
+            return new ResponseEntity<WithdrawMoneyResponse>(HttpStatus.ACCEPTED).status(200).body(transactionService.withdrawMoney(withdrawMoneyDTO));
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
+
+        }
     }
 
 }

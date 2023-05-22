@@ -5,9 +5,12 @@ import io.swagger.model.Account;
 import io.swagger.model.DTOs.CreateAccountDTO;
 import io.swagger.model.DTOs.UpdateAccountDTO;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,30 +21,40 @@ import java.util.UUID;
 public class AccountController {
 
     private AccountService accountService;
-
+    private final HttpServletRequest request;
 
     @GetMapping("/accounts")
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
-    public List<Account> fetchAllAccounts(@RequestParam(value = "offset", required = false) Integer offset,
-                                          @RequestParam(value = "limit", required = false) Integer limit)  {
-        if (offset != null && limit != null) {
-            return accountService.getAccountsByLimitAndOffset(offset, limit);
+    public ResponseEntity<Iterable<Account>> fetchAllAccounts(@RequestParam(value = "offset", required = false) Integer offset,
+                                                         @RequestParam(value = "limit", required = false) Integer limit)  {
+        if (request.getParameter("offset") != null && request.getParameter("limit") != null) {
+            return new ResponseEntity<>(HttpStatus.OK).status(200).body(accountService.getAccountsByLimitAndOffset(offset, limit));
         } else {
-            return accountService.getAllAccounts();
+            return new ResponseEntity<>(HttpStatus.OK).status(200).body(accountService.getAllAccounts());
         }
     }
 
     @GetMapping("/accounts/{id}")
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
-    public Optional<Account> getUserById(@PathVariable("id") UUID id) throws Exception {
-        return accountService.findAccountById(id);
+    public ResponseEntity<Account> getUserById(@PathVariable("id") UUID id) throws Exception {
+        try {
+           return new ResponseEntity<Account>(HttpStatus.OK).status(200).body(accountService.findAccountById(id).get());
+
+        }catch (Exception e){
+            return new ResponseEntity<Account>(HttpStatus.BAD_REQUEST);
+        }
     }
 
 
     @PostMapping("/accounts")
     // @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
-    public Account createAccount(@RequestBody CreateAccountDTO account) throws Exception {
-        return accountService.AddAccount(account);
+    public ResponseEntity<Account> createAccount(@RequestBody CreateAccountDTO account) throws Exception {
+        try{
+            return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(accountService.AddAccount(account));
+        }
+        catch (Exception e){
+            return new ResponseEntity<Account>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/accounts/{id}")
