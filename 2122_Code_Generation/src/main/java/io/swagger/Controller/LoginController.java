@@ -3,8 +3,12 @@ package io.swagger.Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.Service.UserService;
 import io.swagger.exceptions.ApiRequestException;
+import io.swagger.model.Account;
 import io.swagger.model.DTOs.AuthenticationDTO;
 import io.swagger.model.DTOs.BearerTokenDTO;
+import io.swagger.model.DTOs.CreateAccountDTO;
+import io.swagger.model.DTOs.CreateUserDTO;
+import io.swagger.model.User;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +48,17 @@ public class LoginController {
         } catch (Exception e) {
             e.printStackTrace();
             throw new ApiRequestException("please insert a vlaid Username and password ",HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @PostMapping("/register")
+    // @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
+    public ResponseEntity<User> createUser(@RequestBody CreateUserDTO userDTO) throws Exception {
+        try{
+            return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(userService.creatUser(userDTO));
+        }
+        catch (Exception e){
+            return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
         }
     }
 }
