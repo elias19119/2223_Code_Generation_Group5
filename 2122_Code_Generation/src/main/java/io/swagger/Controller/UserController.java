@@ -28,6 +28,7 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
+    // TODO: 5/22/2023 this method as of now cannot return all users, if the filter is not selected. It is suppose to return all users, if no option is selected.
     public ResponseEntity<Iterable<User>> getAllUsers(@RequestParam(value = "offset", required = false) Integer offset,
                                                       @RequestParam(value = "limit", required = false) Integer limit, @ApiParam(required = false, allowableValues = "WITHOUT_ACCOUNTS, WITH_ACCOUNTS", value = "Available values : WITH_ACCOUNT, WITHOUT_ACCOUNT\n" +
             "\n" +
