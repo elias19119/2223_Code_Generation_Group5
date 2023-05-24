@@ -18,10 +18,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -137,12 +134,51 @@ public class TransactionService {
         return transactions;
     }
 
-    public List<Transaction> transferAmountEquals(String IBAN, long amount) throws Exception {
-        List<Transaction> transactions = transactionRepository.findAllByToIbanAndTransferAmount(IBAN,amount);
-        if(transactions.isEmpty()){
-            throw  new Exception("no transactions were found with the amount" + amount);
+    public List<Transaction> findTransferAmountFromIBAN(String IBAN, long amount) throws Exception {
+        List<Transaction> transactions = transactionRepository.findAll();
+        List<Transaction> filteredTransactions = new ArrayList<>();
+        Set<UUID> uniqueTransactionIds = new HashSet<>();
+
+        for (Transaction transaction : transactions) {
+            if (transaction.getFromIban().equals(IBAN)
+                    && transaction.getTransferAmount() == amount) {
+                if (!uniqueTransactionIds.contains(transaction.getId())) {
+                    filteredTransactions.add(transaction);
+                    uniqueTransactionIds.add(transaction.getId());
+                }
+            }
         }
-        return transactions;
+
+        if (filteredTransactions.isEmpty()) {
+            throw new Exception("No transactions were found with the amount " + amount +
+                    " from " + IBAN);
+        }
+
+        return filteredTransactions;
+    }
+
+    public List<Transaction> findTransferAmountFromIBANAndToIBAN(String fromIBAN, String toIBAN, long amount) throws Exception {
+        List<Transaction> transactions = transactionRepository.findAll();
+        List<Transaction> filteredTransactions = new ArrayList<>();
+        Set<UUID> uniqueTransactionIds = new HashSet<>();
+
+        for (Transaction transaction : transactions) {
+            if (transaction.getFromIban().equals(fromIBAN)
+                    && transaction.getToIban().equals(toIBAN)
+                    && transaction.getTransferAmount() == amount) {
+                if (!uniqueTransactionIds.contains(transaction.getId())) {
+                    filteredTransactions.add(transaction);
+                    uniqueTransactionIds.add(transaction.getId());
+                }
+            }
+        }
+
+        if (filteredTransactions.isEmpty()) {
+            throw new Exception("No transactions were found with the amount " + amount +
+                    " from " + fromIBAN + " to " + toIBAN);
+        }
+
+        return filteredTransactions;
     }
 
     public String depositMoney(DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {

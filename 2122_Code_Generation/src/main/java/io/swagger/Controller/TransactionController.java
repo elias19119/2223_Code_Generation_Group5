@@ -43,29 +43,40 @@ public class TransactionController {
     }
 
     @GetMapping("/{IBAN}")
-    public ResponseEntity<Iterable<Transaction>> getTransactionsByIBAN(@PathVariable("IBAN") String IBAN, @RequestParam(value = "ReceiverIBAN", required = false) String ReceiverIBAN,
+    public ResponseEntity<Iterable<Transaction>> getTransactionsByIBAN(@PathVariable("IBAN") String senderIBAN, @RequestParam(value = "ReceiverIBAN", required = false) String receiverIBAN,
                                                                        @RequestParam( value = "to" , required = false) LocalDateTime to, @RequestParam(value = "from", required = false) LocalDateTime from,
                                                                        @RequestParam(value = "amount", required = false) Long amount, @RequestParam(value = "offset", required = false) Integer offset,
                                                                        @RequestParam(value = "limit", required = false) Integer limit) throws Exception {
         List<Transaction> filteredTransactions = new ArrayList<>();
         String accept = request.getHeader("Accept");
-            //get transactions by IBAN by default
         try {
-            filteredTransactions.addAll(transactionService.findTransactionByIban(IBAN));
             if (accept != null) {
-                if(request.getParameter("offset") != null && request.getParameter("limit") != null){
+                if (amount != null && amount > 0) {
+                    if (receiverIBAN != null) {
+                        filteredTransactions.addAll(transactionService.findTransferAmountFromIBANAndToIBAN(senderIBAN, receiverIBAN, amount));
+                    } else {
+                        filteredTransactions.addAll(transactionService.findTransferAmountFromIBAN(senderIBAN, amount));
+                    }
+                }
+                else
+                    filteredTransactions.addAll(transactionService.findTransactionByIban(senderIBAN));
+
+
+                if (from != null && to != null) {
+                    filteredTransactions.addAll(transactionService.findByIbanFromAndToDate(senderIBAN, to, from));
+                }
+
+                if (offset != null && limit != null) {
                     filteredTransactions.addAll(transactionService.getTransactionByLimitAndOffset(offset, limit));
                 }
-                if(amount != null && amount.longValue() > 0)
-                {
-                    if(transactionService.transferAmountEquals(IBAN,amount).isEmpty()){
-                        throw new ApiRequestException("no transactions were found",HttpStatus.NOT_FOUND);
-                    }
-                    filteredTransactions.addAll(transactionService.transferAmountEquals(IBAN,amount));
+                if(receiverIBAN != null){
+                    filteredTransactions.addAll(transactionService.findFromIbanToIban(senderIBAN,receiverIBAN));
                 }
-                if(request.getParameter("from") != null && request.getParameter("to") != null ){
-                    filteredTransactions.addAll(transactionService.findByIbanFromAndToDate(IBAN,to,from));
+
+                if (filteredTransactions.isEmpty()) {
+                    throw new ApiRequestException("No transactions were found", HttpStatus.NOT_FOUND);
                 }
+
                 return new ResponseEntity<Iterable<Transaction>>(HttpStatus.ACCEPTED).status(200).body(filteredTransactions);
 
             }
