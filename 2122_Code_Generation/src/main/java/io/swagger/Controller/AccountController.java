@@ -46,7 +46,7 @@ public class AccountController {
     }
 
 
-    @PostMapping("/accounts")
+    @PostMapping()
     // @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
     public ResponseEntity<Account> createAccount(@RequestBody CreateAccountDTO account) throws Exception {
         try{

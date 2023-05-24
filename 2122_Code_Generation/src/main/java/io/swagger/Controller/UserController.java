@@ -40,7 +40,8 @@ public class UserController {
             } else if (filter.equals("WITHOUT_ACCOUNTS")) {
                 filteredUsers.addAll(userService.getAllUsersWithNoAccount());
             }
-        }
+        }else
+            filteredUsers.addAll(userService.getAllUsers());
 
         if(request.getParameter("offset") != null && request.getParameter("limit") != null){
             filteredUsers.addAll(userService.getUsersByLimitAndOffset(offset,limit));
