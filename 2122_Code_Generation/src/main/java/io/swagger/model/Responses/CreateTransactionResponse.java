@@ -1,5 +1,6 @@
 package io.swagger.model.Responses;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ public class CreateTransactionResponse {
 
     private String userName;
 
-    private LocalDateTime dateOfTransaction;
+    private LocalDate dateOfTransaction;
 
     public UUID getId() {
         return id;
@@ -36,11 +37,11 @@ public class CreateTransactionResponse {
         this.userName = userName;
     }
 
-    public LocalDateTime getDateOfTransaction() {
+    public LocalDate getDateOfTransaction() {
         return dateOfTransaction;
     }
 
-    public void setDateOfTransaction(LocalDateTime dateOfTransaction) {
+    public void setDateOfTransaction(LocalDate dateOfTransaction) {
         this.dateOfTransaction = dateOfTransaction;
     }
 }

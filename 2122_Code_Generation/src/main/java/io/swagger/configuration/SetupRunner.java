@@ -15,6 +15,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.logging.Logger;
@@ -67,7 +68,7 @@ public class SetupRunner implements ApplicationRunner {
         userRepository.save(customerUser);
         userRepository.save(employeeUser);
 
-        Transaction transaction = Transaction.builder().dateOfTransaction(LocalDateTime.now())
+        Transaction transaction = Transaction.builder().dateOfTransaction(LocalDate.now())
                 .userId(bankUser.getId()).fromIban("NL82INGB4787393871").toIban("NL82INGB3487393870")
                 .transferAmount(100).build();
         transactionRepository.save(transaction);

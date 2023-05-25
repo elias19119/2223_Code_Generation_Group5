@@ -17,6 +17,7 @@ import io.swagger.model.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -93,7 +94,7 @@ public class TransactionService {
                 .fromIban(senderAccount.getIBANNo())
                 .toIban(transaction.getReceiverIban())
                 .transferAmount(transaction.getTransferAmount())
-                .dateOfTransaction(LocalDateTime.now())
+                .dateOfTransaction(LocalDate.now())
                 .build());
 
         // Create and return the TransactionResponse object
@@ -118,7 +119,7 @@ public class TransactionService {
         }
         return transactions;
     }
-    public List<Transaction> findByIbanFromAndToDate(String IBAN, LocalDateTime to, LocalDateTime from) throws Exception{
+    public List<Transaction> findByIbanFromAndToDate(String IBAN, LocalDate to, LocalDate from) throws Exception{
         List<Transaction> transactions = transactionRepository.findByFromIbanAndDateOfTransactionBetween(IBAN, to, from);
         if(transactions.isEmpty()){
             throw new Exception("no transactions were between these dates");
@@ -160,16 +161,12 @@ public class TransactionService {
     public List<Transaction> findTransferAmountFromIBANAndToIBAN(String fromIBAN, String toIBAN, long amount) throws Exception {
         List<Transaction> transactions = transactionRepository.findAll();
         List<Transaction> filteredTransactions = new ArrayList<>();
-        Set<UUID> uniqueTransactionIds = new HashSet<>();
 
         for (Transaction transaction : transactions) {
             if (transaction.getFromIban().equals(fromIBAN)
                     && transaction.getToIban().equals(toIBAN)
                     && transaction.getTransferAmount() == amount) {
-                if (!uniqueTransactionIds.contains(transaction.getId())) {
                     filteredTransactions.add(transaction);
-                    uniqueTransactionIds.add(transaction.getId());
-                }
             }
         }
 

@@ -11,15 +11,19 @@ import io.swagger.model.Responses.WithdrawMoneyResponse;
 import io.swagger.model.Transaction;
 import lombok.AllArgsConstructor;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @RestController
@@ -44,10 +48,11 @@ public class TransactionController {
 
     @GetMapping("/{IBAN}")
     public ResponseEntity<Iterable<Transaction>> getTransactionsByIBAN(@PathVariable("IBAN") String senderIBAN, @RequestParam(value = "ReceiverIBAN", required = false) String receiverIBAN,
-                                                                       @RequestParam( value = "to" , required = false) LocalDateTime to, @RequestParam(value = "from", required = false) LocalDateTime from,
+                                                                       @RequestParam( value = "to" , required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to, @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                        @RequestParam(value = "amount", required = false) Long amount, @RequestParam(value = "offset", required = false) Integer offset,
                                                                        @RequestParam(value = "limit", required = false) Integer limit) throws Exception {
-        List<Transaction> filteredTransactions = new ArrayList<>();
+        //List<Transaction> filteredTransactions = new ArrayList<>();
+        Set<Transaction> filteredTransactions = new HashSet<>();
         String accept = request.getHeader("Accept");
         try {
             if (accept != null) {
@@ -81,7 +86,7 @@ public class TransactionController {
 
             }
         }catch (Exception e){
-            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
+            throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
 
         }
         return null;

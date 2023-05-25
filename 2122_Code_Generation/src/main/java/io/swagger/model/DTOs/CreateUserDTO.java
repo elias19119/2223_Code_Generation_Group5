@@ -25,6 +25,20 @@ public class CreateUserDTO {
 
     private UserStatus status;
 
+    public CreateUserDTO(String userName, String mobileNumber, String firstName, String lastName, String dateOfBirth, String password, String roles, UserStatus status) {
+        this.userName = userName;
+        this.mobileNumber = mobileNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        DateOfBirth = dateOfBirth;
+        this.password = password;
+        this.roles = roles;
+        this.status = status;
+    }
+
+    public CreateUserDTO() {
+    }
+
     public String getUserName() {
         return userName;
     }

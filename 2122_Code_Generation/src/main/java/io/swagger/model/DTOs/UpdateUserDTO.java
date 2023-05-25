@@ -26,6 +26,20 @@ public class UpdateUserDTO {
 
     private UserStatus status;
 
+    public UpdateUserDTO(String userName, String mobileNumber, String firstName, String lastName, String dateOfBirth, String password, UserRole roles, UserStatus status) {
+        this.userName = userName;
+        this.mobileNumber = mobileNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        DateOfBirth = dateOfBirth;
+        this.password = password;
+        this.roles = roles;
+        this.status = status;
+    }
+
+    public UpdateUserDTO() {
+    }
+
     public String getUserName() {
         return userName;
     }
