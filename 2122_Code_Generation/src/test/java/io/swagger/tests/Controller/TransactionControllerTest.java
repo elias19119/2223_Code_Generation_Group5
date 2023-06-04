@@ -162,7 +162,7 @@ public class TransactionControllerTest {
         when(transactionService.makeTransaction(any(CreateTransactionDTO.class), any(String.class)))
                 .thenReturn(transactionResponse);
 
-        ResultActions resultActions = mockMvc.perform(get("/transactions/{IBAN}", "your-iban")
+        ResultActions resultActions = mockMvc.perform(get("/transactions/{IBAN}", accounts.get(1).getIBANNo())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON));
     }
