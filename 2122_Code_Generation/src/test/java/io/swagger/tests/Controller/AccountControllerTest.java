@@ -94,7 +94,7 @@ class AccountControllerTest {
         Mockito.when(accountService.getAllAccounts())
                 .thenReturn(accounts);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/accounts/accounts"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/accounts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", Matchers.hasSize(3)))
                 .andReturn();
@@ -108,7 +108,7 @@ class AccountControllerTest {
         Mockito.when(accountService.getAllAccounts())
                 .thenReturn(accounts);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/accounts/accounts"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/accounts"))
                 .andExpect(status().isOk());
     }
 
@@ -118,7 +118,7 @@ class AccountControllerTest {
         Account mockAccount = accounts.get(0);
         Mockito.when(accountService.findAccountById(mockAccount.getId()))
                 .thenReturn(Optional.ofNullable(mockAccount));
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/accounts/accounts/" + mockAccount.getId()).with(csrf()))
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/accounts/" + mockAccount.getId()).with(csrf()))
                 .andExpect(status().isOk());
     }
     @WithMockUser(username = "employee", roles = {"EMPLOYEE", "CUSTOMERS"})
@@ -150,7 +150,7 @@ class AccountControllerTest {
 
         String accountJson = objectMapper.writeValueAsString(account);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/accounts/accounts/" + account.getId())
+        mockMvc.perform(MockMvcRequestBuilders.put("/accounts/" + account.getId())
                         .content(accountJson)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))

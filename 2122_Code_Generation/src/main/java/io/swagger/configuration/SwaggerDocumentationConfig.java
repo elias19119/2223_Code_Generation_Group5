@@ -17,7 +17,6 @@ import io.swagger.v3.oas.models.info.License;
 import java.util.Arrays;
 import java.util.List;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-05-28T20:53:06.020Z[GMT]")
 @Configuration
 public class SwaggerDocumentationConfig {
 

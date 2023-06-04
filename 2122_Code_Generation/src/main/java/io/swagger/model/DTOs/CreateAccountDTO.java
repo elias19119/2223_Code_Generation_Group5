@@ -6,15 +6,15 @@ import io.swagger.model.Enums.AccountType;
 import java.util.UUID;
 
 public class CreateAccountDTO {
-    private UUID id;
+    private UUID userId;
     private AccountType accountType;
 
-    public UUID getId() {
-        return id;
+    public UUID getUserId() {
+        return userId;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setUserId(UUID userId) {
+        this.userId = userId;
     }
 
     public AccountType getAccountType() {

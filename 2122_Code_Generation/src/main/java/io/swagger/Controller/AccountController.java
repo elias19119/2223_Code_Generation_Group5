@@ -17,7 +17,6 @@ import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/accounts")
 public class AccountController {
 
     private AccountService accountService;
@@ -46,7 +45,7 @@ public class AccountController {
     }
 
 
-    @PostMapping()
+    @PostMapping("/accounts")
     // @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
     public ResponseEntity<Account> createAccount(@RequestBody CreateAccountDTO account) throws Exception {
         try{
@@ -75,7 +74,7 @@ public class AccountController {
         return accountService.findIbansByFirstNameAndPhoneNumber(firstName, phoneNumber);
     }
 
-    @GetMapping("/balance")
+    @GetMapping("/accounts/balance")
     public String balanceCheck(@RequestParam("userId")UUID userId,@RequestParam("IBAN") String IBAN) throws Exception {
         return accountService.balanceCheck(userId, IBAN);
     }
