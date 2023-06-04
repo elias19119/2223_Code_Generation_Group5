@@ -28,7 +28,7 @@ public class AccountService {
     } // TODO: 5/19/2023 Add filtering
 
     public Account AddAccount(CreateAccountDTO accountDto) throws Exception {
-        Optional<User> user = userRepository.findById(accountDto.getId());
+        Optional<User> user = userRepository.findById(accountDto.getUserId());
 
         if (!user.isPresent()) {
             throw new Exception("User was not found");
