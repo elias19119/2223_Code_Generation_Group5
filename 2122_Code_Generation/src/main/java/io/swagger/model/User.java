@@ -51,5 +51,11 @@ public class User {
     @OneToMany
     private Set<Account> accounts = new HashSet<>();
 
+    public void addAccount(Account account){
+        if (accounts == null) {
+            accounts = new HashSet<>();
+        }
+        accounts.add(account);
+    }
 }
 

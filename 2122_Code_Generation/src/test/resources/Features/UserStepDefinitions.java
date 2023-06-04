@@ -107,8 +107,8 @@ public class UserStepDefinitions {
     }
 
 
-    @When("updating a user with id {UUID}")
-    public void updatingAUserWithId(UpdateUserDTO body, Integer id) throws URISyntaxException, JsonProcessingException {
+    @When("updating a user with id {Long}")
+    public void updatingAUserWithId(UpdateUserDTO body, Long id) throws URISyntaxException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
         UpdateUserDTO user = new UpdateUserDTO(body.getUserName(), body.getMobileNumber(), body.getFirstName(), body.getLastName(), body.getDateOfBirth(), body.getPassword(), body.getRoles(), body.getStatus());        URI uri = new URI(baseUrl + "/" + id);

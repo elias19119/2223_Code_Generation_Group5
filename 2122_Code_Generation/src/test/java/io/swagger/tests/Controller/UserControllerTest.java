@@ -107,16 +107,12 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$", hasSize(3)));
     }
 
-
-
     @WithMockUser(username = "employee", roles = {"EMPLOYEE", "CUSTOMERS"})
     @Test
     public void getAllUsersShouldReturnOk() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/users"))
                 .andExpect(status().isOk());
     }
-
-
 
 
     @WithMockUser(username = "employee", roles = {"EMPLOYEE", "CUSTOMERS"})
