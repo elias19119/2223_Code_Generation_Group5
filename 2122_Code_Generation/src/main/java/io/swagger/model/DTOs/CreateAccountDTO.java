@@ -9,6 +9,14 @@ public class CreateAccountDTO {
     private UUID userId;
     private AccountType accountType;
 
+    public CreateAccountDTO(UUID userId, AccountType accountType) {
+        this.userId = userId;
+        this.accountType = accountType;
+    }
+
+    public CreateAccountDTO() {
+    }
+
     public UUID getUserId() {
         return userId;
     }

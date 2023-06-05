@@ -135,11 +135,6 @@ public class UserStepDefinitions {
         this.responseBody = response.getBody();
     }
 
-    @When("creating a null user")
-    public void createUserWithNullDetails(){
-
-    }
-
     @Then("show http status {int}")
     public void thenShowHttpStatus200(int statusCode) {
         Assert.assertEquals(statusCode, response.getStatusCodeValue());

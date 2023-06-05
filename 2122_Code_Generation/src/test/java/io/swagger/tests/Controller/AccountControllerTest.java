@@ -125,7 +125,6 @@ class AccountControllerTest {
     @Test
     public void creatingAnAccountReturnsCreated() throws Exception {
         Account account = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
-        // Convert the account object to JSON
         ObjectMapper objectMapper = new ObjectMapper();
         //register the jackson-datatype-jsr310 module
         objectMapper.registerModule(new JavaTimeModule());

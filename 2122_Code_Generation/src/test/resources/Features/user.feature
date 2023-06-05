@@ -24,7 +24,3 @@ Feature: Testing Users
     Given  the user is an employee
     When creating a new user "invalid"
     Then show http status 400
-
-
-
-
