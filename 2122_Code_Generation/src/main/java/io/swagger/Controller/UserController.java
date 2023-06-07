@@ -20,6 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/users")
+@CrossOrigin
 
 public class UserController {
     private final UserService userService;

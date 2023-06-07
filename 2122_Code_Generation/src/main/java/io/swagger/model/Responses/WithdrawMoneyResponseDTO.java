@@ -3,7 +3,7 @@ package io.swagger.model.Responses;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class WithdrawMoneyResponse {
+public class WithdrawMoneyResponseDTO {
     private LocalDateTime dateOfTransaction;
     private UUID transactionId;
     private long amount;

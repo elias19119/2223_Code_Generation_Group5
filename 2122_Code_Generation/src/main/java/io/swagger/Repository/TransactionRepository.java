@@ -19,6 +19,6 @@ public interface TransactionRepository extends JpaRepository<Transaction,UUID> {
 
     List<Transaction> findAllByFromIban(String IBAN);
 
-    List<Transaction> findAllByDateOfTransaction(LocalDateTime dateOfTransactions);
+    List<Transaction> findAllByDateOfTransaction(LocalDate dateOfTransactions);
 
 }

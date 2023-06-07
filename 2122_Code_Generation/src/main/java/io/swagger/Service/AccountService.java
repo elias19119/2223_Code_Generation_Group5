@@ -25,7 +25,7 @@ public class AccountService {
 
     public List<Account> getAllAccounts() {
         return accountRepository.findAll();
-    } // TODO: 5/19/2023 Add filtering
+    }
 
     public Account AddAccount(CreateAccountDTO accountDto) throws Exception {
         Optional<User> user = userRepository.findById(accountDto.getUserId());
@@ -56,7 +56,7 @@ public class AccountService {
 
     }
 
-    public void updateAccount(UUID id, UpdateAccountDTO accountDto) throws Exception { // TODO: 5/19/2023 Just like in this method, handle exceptions too
+    public void updateAccount(UUID id, UpdateAccountDTO accountDto) throws Exception {
         Optional<Account> a = accountRepository.findById(id);
         if (a.isPresent()) {
             a.get().setAccountStatus(accountDto.getAccountStatus());

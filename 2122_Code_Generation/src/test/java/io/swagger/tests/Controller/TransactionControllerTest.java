@@ -1,11 +1,9 @@
 package io.swagger.tests.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.swagger.Controller.AccountController;
 import io.swagger.Controller.TransactionController;
 import io.swagger.Repository.AccountRepository;
 import io.swagger.Repository.TransactionRepository;
@@ -20,10 +18,9 @@ import io.swagger.model.Enums.AccountStatus;
 import io.swagger.model.Enums.AccountType;
 import io.swagger.model.Enums.UserRole;
 import io.swagger.model.Enums.UserStatus;
-import io.swagger.model.Responses.CreateTransactionResponse;
+import io.swagger.model.Responses.CreateTransactionResponseDTO;
 import io.swagger.model.Transaction;
 import io.swagger.model.User;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +31,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -47,8 +43,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.lang.reflect.Field;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,11 +51,9 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(TransactionController.class)
@@ -104,7 +96,7 @@ public class TransactionControllerTest {
     @Mock
     JwtTokenProvider jwtTokenProvider;
     @Mock
-    CreateTransactionResponse response;
+    CreateTransactionResponseDTO response;
 
     @BeforeEach
     @Test
@@ -133,7 +125,7 @@ public class TransactionControllerTest {
         String jwtUserToken = createToken(username, role);
 
         TransactionService transactionServiceSpy = Mockito.spy(transactionService);
-        CreateTransactionResponse expectedResponse = new CreateTransactionResponse();
+        CreateTransactionResponseDTO expectedResponse = new CreateTransactionResponseDTO();
 
         Mockito.when(transactionRepository.save(Mockito.any(Transaction.class)))
                 .thenReturn(new Transaction());
@@ -157,7 +149,7 @@ public class TransactionControllerTest {
         transactionDTO.setReceiverIban(accounts.get(2).getIBANNo());
         transactionDTO.setTransferAmount(100);
 
-        CreateTransactionResponse transactionResponse = transactionService.makeTransaction(transactionDTO, "user-jwt-token");
+        CreateTransactionResponseDTO transactionResponse = transactionService.makeTransaction(transactionDTO, "user-jwt-token");
 
         when(transactionService.makeTransaction(any(CreateTransactionDTO.class), any(String.class)))
                 .thenReturn(transactionResponse);

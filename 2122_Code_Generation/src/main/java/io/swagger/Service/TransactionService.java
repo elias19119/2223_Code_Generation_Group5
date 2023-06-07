@@ -2,21 +2,26 @@ package io.swagger.Service;
 
 import io.swagger.Repository.AccountRepository;
 import io.swagger.Repository.TransactionRepository;
-import io.swagger.Repository.UserRepository;
 import io.swagger.Security.JwtTokenProvider;
 import io.swagger.model.Account;
 import io.swagger.model.DTOs.CreateTransactionDTO;
 import io.swagger.model.DTOs.DepositToCheckingAccountDTO;
 import io.swagger.model.DTOs.WithdrawMoneyDTO;
 import io.swagger.model.Enums.AccountStatus;
+import io.swagger.model.Enums.UserRole;
 import io.swagger.model.Enums.UserStatus;
-import io.swagger.model.Responses.CreateTransactionResponse;
-import io.swagger.model.Responses.WithdrawMoneyResponse;
+import io.swagger.model.Responses.CreateTransactionResponseDTO;
+import io.swagger.model.Responses.WithdrawMoneyResponseDTO;
 import io.swagger.model.Transaction;
 import io.swagger.model.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -26,38 +31,46 @@ import java.util.*;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final JwtTokenProvider jwtUtil;
+    private EntityManager em;
 
 
-    public CreateTransactionResponse makeTransaction(CreateTransactionDTO transaction, String token) throws Exception {
+    public CreateTransactionResponseDTO makeTransaction(CreateTransactionDTO transaction, String token) throws Exception {
         if (transaction.getTransferAmount() <= 0) {
             throw new Exception("Amount should be greater than zero");
         }
 
-        Optional<User> user = Optional.ofNullable(jwtUtil.getUserFromToken(token));
+        Optional<User> user = Optional.ofNullable(jwtUtil.getUserFromToken(token)); // change this  to get username from security context
         if (!user.isPresent() || !user.get().getStatus().equals(UserStatus.ACTIVE)) {
             throw new Exception("User is not active");
         }
-
+        // if the user is employee you dont need to check senderIBAN
         Account senderAccount = null;
         for (Account account : user.get().getAccounts()) {
-            if (account.getIBANNo().equals(transaction.getSenderIban())) {
-                if (account.getAccountStatus().equals(AccountStatus.ACTIVE)) {
-                    senderAccount = account;
-                    break;
-                } else {
-                    throw new Exception("Sender account is not active");
+            if(user.get().getRoles() != UserRole.BANK){
+                if (account.getIBANNo().equals(transaction.getSenderIban())) {
+                    if (account.getAccountStatus().equals(AccountStatus.ACTIVE)) {
+                        senderAccount = account;
+                        break;
+                    } else {
+                        throw new Exception("Sender account is not active");
+                    }
                 }
             }
+            else
+            senderAccount = account;
         }
 
         if (senderAccount == null) {
             throw new Exception("Sender account not found");
         }
 
-        Optional<Account> receiverAccount = accountRepository.findByIBANNo(transaction.getReceiverIban());
+        String receiverIban = transaction.getReceiverIban();
+        System.out.println("Receiver IBAN: " + receiverIban);
+
+        Optional<Account> receiverAccount = accountRepository.findByIBANNo(receiverIban);
+        System.out.println("Receiver Account: " + receiverAccount.orElse(null));
         if (!receiverAccount.isPresent() || !receiverAccount.get().getAccountStatus().equals(AccountStatus.ACTIVE)) {
             throw new Exception("Receiver account not found or not active");
         }
@@ -68,7 +81,7 @@ public class TransactionService {
         }
 
         // Balance and limit validations
-        long totalTransactionsOfTheDay = transactionRepository.findAllByDateOfTransaction(LocalDateTime.now()).stream()
+        long totalTransactionsOfTheDay = transactionRepository.findAllByDateOfTransaction(LocalDate.now()).stream()
                 .mapToLong(Transaction::getTransferAmount)
                 .sum();
         long newTotalTransactions = totalTransactionsOfTheDay + transaction.getTransferAmount();
@@ -98,7 +111,7 @@ public class TransactionService {
                 .build());
 
         // Create and return the TransactionResponse object
-        CreateTransactionResponse transactionResponse = new CreateTransactionResponse();
+        CreateTransactionResponseDTO transactionResponse = new CreateTransactionResponseDTO();
         transactionResponse.setId(savedTransaction.getId());
         transactionResponse.setTransferAmount(savedTransaction.getTransferAmount());
         transactionResponse.setUserName(user.get().getUserName());
@@ -111,7 +124,7 @@ public class TransactionService {
 
         return transactionRepository.findAll();
     }
-
+    //get rid of all these methods and combine them into a one method
     public List<Transaction> findTransactionByIban(String IBAN) throws Exception{
         List<Transaction> transactions = transactionRepository.findAllByFromIban(IBAN);
         if(transactions.isEmpty()){
@@ -178,6 +191,27 @@ public class TransactionService {
         return filteredTransactions;
     }
 
+    List<Transaction> findTransactionsByFilters(String fromIBAN, String toIBAN, long amount, LocalDate to, LocalDate from , int offset, int limit) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Transaction> cq = cb.createQuery(Transaction.class);
+
+        Root<Transaction> transaction = cq.from(Transaction.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (fromIBAN != null) {
+            predicates.add(cb.equal(transaction.get("fromIBAN"), fromIBAN));
+        }
+        if (toIBAN != null) {
+            predicates.add(cb.like(transaction.get("toIBAN"), toIBAN));
+        }
+        cq.where(predicates.toArray(new Predicate[0]));
+
+        return em.createQuery(cq).getResultList();
+    }
+
+
+
+    // change from isPresent() to !isPresent()
     public String depositMoney(DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {
 
         Optional<Account> a = accountRepository.findByIBANNo(depositToCheckingAccountDTO.getIBAN());
@@ -191,10 +225,10 @@ public class TransactionService {
         }
     }
 
-    public WithdrawMoneyResponse withdrawMoney(WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
+    public WithdrawMoneyResponseDTO withdrawMoney(WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
 
         Optional<Account> a = accountRepository.findByIBANNo(withdrawMoneyDTO.getIBAN());
-        WithdrawMoneyResponse transaction = new WithdrawMoneyResponse();
+        WithdrawMoneyResponseDTO transaction = new WithdrawMoneyResponseDTO();
         if(a.isPresent()){
             if(a.get().getBalance() < withdrawMoneyDTO.getAmount()){
                 throw new Exception("Insufficient Amount");

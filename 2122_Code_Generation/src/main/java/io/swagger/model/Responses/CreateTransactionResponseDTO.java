@@ -1,10 +1,9 @@
 package io.swagger.model.Responses;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class CreateTransactionResponse {
+public class CreateTransactionResponseDTO {
 
     private UUID id;
     private long transferAmount;

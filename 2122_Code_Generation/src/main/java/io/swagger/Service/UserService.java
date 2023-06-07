@@ -27,11 +27,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserService {
 
-
+    // dont return a password
+    // add DTO to responses name
     private UserRepository userRepository;
     private JwtTokenProvider jwtTokenProvider;
     private AuthenticationManager authenticationManager;
-
     public User creatUser(CreateUserDTO userDto) {
         User user = new User();
         user.setMobileNumber(userDto.getMobileNumber());

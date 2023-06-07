@@ -1,13 +1,12 @@
 package io.swagger.Controller;
 
-import io.swagger.Security.JwtTokenProvider;
 import io.swagger.Service.TransactionService;
 import io.swagger.exceptions.ApiRequestException;
 import io.swagger.model.DTOs.CreateTransactionDTO;
 import io.swagger.model.DTOs.DepositToCheckingAccountDTO;
 import io.swagger.model.DTOs.WithdrawMoneyDTO;
-import io.swagger.model.Responses.CreateTransactionResponse;
-import io.swagger.model.Responses.WithdrawMoneyResponse;
+import io.swagger.model.Responses.CreateTransactionResponseDTO;
+import io.swagger.model.Responses.WithdrawMoneyResponseDTO;
 import io.swagger.model.Transaction;
 import lombok.AllArgsConstructor;
 
@@ -19,15 +18,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
 @RestController
 @RequestMapping("/transactions")
+@CrossOrigin
 
 public class TransactionController {
 
@@ -37,7 +34,7 @@ public class TransactionController {
     @PostMapping
     //Employee should be able to do transaction from any account
     //@PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
-    public ResponseEntity<CreateTransactionResponse> makeTransaction(@RequestBody CreateTransactionDTO transaction) throws Exception {
+    public ResponseEntity<CreateTransactionResponseDTO> makeTransaction(@RequestBody CreateTransactionDTO transaction) throws Exception {
         String token = request.getHeader("Authorization");
         try{
             return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(transactionService.makeTransaction(transaction, token));
@@ -103,9 +100,9 @@ public class TransactionController {
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<WithdrawMoneyResponse> withdraw(@RequestBody WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
+    public ResponseEntity<WithdrawMoneyResponseDTO> withdraw(@RequestBody WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
         try {
-            return new ResponseEntity<WithdrawMoneyResponse>(HttpStatus.ACCEPTED).status(200).body(transactionService.withdrawMoney(withdrawMoneyDTO));
+            return new ResponseEntity<WithdrawMoneyResponseDTO>(HttpStatus.ACCEPTED).status(200).body(transactionService.withdrawMoney(withdrawMoneyDTO));
         }catch (Exception e){
             throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
 

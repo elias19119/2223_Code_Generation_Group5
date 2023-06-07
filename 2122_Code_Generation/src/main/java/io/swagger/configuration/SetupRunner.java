@@ -46,8 +46,12 @@ public class SetupRunner implements ApplicationRunner {
         Account userAccount = Account.builder().IBANNo("NL21INGB3487393870").accountType(AccountType.CURRENT)
                 .balance(0).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
 
+        Account employeeAccount = Account.builder().IBANNo("NL21INGB3487394444").accountType(AccountType.CURRENT)
+                .balance(0).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
+
         accountRepository.save(bankAccount);
         accountRepository.save(userAccount);
+        accountRepository.save(employeeAccount);
 
         User bankUser = User.builder().userName("Bank@g.com").mobileNumber("2266")
                 .firstName("Bank").lastName("bestbank").DateOfBirth("00-00-00").password("bankpass")
@@ -61,7 +65,7 @@ public class SetupRunner implements ApplicationRunner {
 
         User employeeUser = User.builder().userName("employee@g.com").mobileNumber("9423")
                 .firstName("Man").lastName("jan").DateOfBirth("00-00-00").password("user")
-                .roles(UserRole.EMPLOYEE).accounts(null)
+                .roles(UserRole.EMPLOYEE).accounts(Collections.singleton(employeeAccount))
                 .status(UserStatus.ACTIVE).build();
 
         userRepository.save(bankUser);
