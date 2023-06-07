@@ -24,7 +24,7 @@ import java.util.Set;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/transactions")
-@CrossOrigin
+@CrossOrigin("*")
 
 public class TransactionController {
 

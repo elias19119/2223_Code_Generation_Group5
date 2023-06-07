@@ -20,8 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/users")
-@CrossOrigin
-
+@CrossOrigin(origins = "http://localhost:8082")  // <- use your url of frontend
 public class UserController {
     private final UserService userService;
     private final HttpServletRequest request;

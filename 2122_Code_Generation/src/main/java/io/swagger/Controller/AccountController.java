@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@CrossOrigin
+@CrossOrigin("*")
 public class AccountController {
 
     private AccountService accountService;
