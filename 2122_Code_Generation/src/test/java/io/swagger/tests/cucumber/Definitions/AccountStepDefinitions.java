@@ -8,6 +8,7 @@ import io.cucumber.java.en.When;
 import io.swagger.model.Account;
 import io.swagger.model.DTOs.AuthenticationDTO;
 import io.swagger.model.DTOs.CreateAccountDTO;
+import io.swagger.model.DTOs.UpdateAccountDTO;
 import io.swagger.model.Enums.AccountType;
 import io.swagger.model.User;
 import org.json.JSONArray;
@@ -74,14 +75,17 @@ public class AccountStepDefinitions {
         response = template.exchange(uri, HttpMethod.POST, entity, String.class);
     }
     @When("Retrieve an account by {string} user ID")
-    public void WhenRetrieveAccountByIBAN(String validity) throws URISyntaxException, JSONException {
+    public void WhenRetrieveAccountByUserId(String validity) throws URISyntaxException, JSONException {
         whenEmployeeRequestAllAccounts();
 
         JSONArray result = new JSONArray(responseBody);
         JSONObject account = result.getJSONObject(1);
         if(validity.equals("valid")){
             Id = account.getString("id");
+        }else{
+            Id = "notExist";
         }
+
         URI uri = new URI(url +"/"+ Id);
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + token);
@@ -89,12 +93,37 @@ public class AccountStepDefinitions {
         entity = new HttpEntity<>("", headers);
         try{
             response = template.exchange(uri, HttpMethod.GET, entity, String.class);
-        }catch (HttpClientErrorException.Unauthorized exception){
-
+        }catch (HttpClientErrorException.BadRequest exception){
+            response = new ResponseEntity<>(exception.getStatusCode());
         }
 
     }
+    @When("Update the balance of an account with {string} ID")
+    public void updateAccountByEmployeeShouldReturnOk(String validity) throws URISyntaxException, JSONException {
+        whenEmployeeRequestAllAccounts();
 
+        JSONArray result = new JSONArray(responseBody);
+        JSONObject account = result.getJSONObject(1);
+
+        UpdateAccountDTO updateAccountDTO = new UpdateAccountDTO();
+        updateAccountDTO.setAbsoluteLimit(100);
+
+        if(validity.equals("valid")){
+            Id = account.getString("id");
+        }
+
+        URI uri = new URI(url +"/"+ Id);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", "Bearer " + token);
+
+        HttpEntity<UpdateAccountDTO> updateEntity = new HttpEntity<>(updateAccountDTO, headers);
+
+        try {
+            response = template.exchange(uri, HttpMethod.PUT, updateEntity, String.class);
+        } catch (HttpClientErrorException.Unauthorized exception) {
+            response = new ResponseEntity<>(exception.getStatusCode());
+        }
+    }
     @Then("show http status code {int}")
     public void thenShowHttpStatus(int statusCode) {
         Assert.assertEquals(statusCode, response.getStatusCodeValue());

@@ -14,3 +14,13 @@ Feature: Accounts
     Given User is employee
     When Retrieve an account by "valid" user ID
     Then show http status code 200
+
+  Scenario: Retrieve an account by invalid IBAN as an Employee
+    Given User is employee
+    When Retrieve an account by "invalid" user ID
+    Then show http status code 400
+
+  Scenario: Update an account details as an Employee
+    Given User is employee
+    When Update the balance of an account with "valid" ID
+    Then show http status code 200
