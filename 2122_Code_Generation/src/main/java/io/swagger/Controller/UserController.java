@@ -5,14 +5,13 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.model.*;
 
 import io.swagger.model.DTOs.UpdateUserDTO;
+import io.swagger.model.Responses.GetUserResponseDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.exceptions.ApiRequestException;
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,31 +22,27 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:8082")  // <- use your url of frontend
 public class UserController {
     private final UserService userService;
-    private final HttpServletRequest request;
-
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
-    public ResponseEntity<Iterable<User>> getAllUsers(@RequestParam(value = "offset", required = false) Integer offset,
-                                                      @RequestParam(value = "limit", required = false) Integer limit, @ApiParam(required = false, allowableValues = "WITHOUT_ACCOUNTS, WITH_ACCOUNTS", value = "Available values : WITH_ACCOUNT, WITHOUT_ACCOUNT\n" +
-            "\n" +
-            "Default value : WITH_ACCOUNT\n") String filter) {
-        List<User> filteredUsers = new ArrayList<>();
-        if (request.getParameter("filter") != null) {
-            if (filter.equals("WITH_ACCOUNTS")) {
-                filteredUsers.addAll(userService.getAllUsers());
-            } else if (filter.equals("WITHOUT_ACCOUNTS")) {
-                filteredUsers.addAll(userService.getAllUsersWithNoAccount());
-            }
-        }else
-            filteredUsers.addAll(userService.getAllUsers());
+    public ResponseEntity<Iterable<GetUserResponseDTO>> getAllUsers(
+            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "limit", required = false) Integer limit,
+            @ApiParam(required = false, allowableValues = "WITHOUT_ACCOUNTS, WITH_ACCOUNTS",
+                    value = "Available values: WITH_ACCOUNTS, WITHOUT_ACCOUNTS\n" +
+                            "Default value: WITH_ACCOUNTS\n")
+            @RequestParam(value = "filter", required = false, defaultValue = "WITH_ACCOUNTS") String filter) {
 
-        if(request.getParameter("offset") != null && request.getParameter("limit") != null){
-            filteredUsers.addAll(userService.getUsersByLimitAndOffset(offset,limit));
+        List<GetUserResponseDTO> filteredUsers;
+        try{
+            filteredUsers = userService.findUsersByFilter(filter,offset,limit);
+            return new ResponseEntity<>(HttpStatus.OK).status(200).body(filteredUsers);
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
+
         }
-
-        return new ResponseEntity<>(HttpStatus.OK).status(200).body(filteredUsers);
     }
+
 
 
     @PutMapping("{id}")
@@ -62,9 +57,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") UUID id) throws Exception {
+    public ResponseEntity<GetUserResponseDTO> getUserById(@PathVariable("id") UUID id) throws Exception {
         try {
-            Optional<User> user = userService.findUserById(id);
+            Optional<GetUserResponseDTO> user = userService.findUserById(id);
             return new ResponseEntity<User>(HttpStatus.FOUND).status(200).body(user.get());
 
         } catch (Exception e) {

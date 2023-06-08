@@ -132,7 +132,7 @@ public class TransactionControllerTest {
 
         Mockito.doReturn(expectedResponse)
                 .when(transactionServiceSpy)
-                .makeTransaction(txDTO, jwtUserToken);
+                .makeTransaction(txDTO);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/transactions")
                         .header("Authorization", "Bearer " + jwtUserToken)
@@ -149,9 +149,9 @@ public class TransactionControllerTest {
         transactionDTO.setReceiverIban(accounts.get(2).getIBANNo());
         transactionDTO.setTransferAmount(100);
 
-        CreateTransactionResponseDTO transactionResponse = transactionService.makeTransaction(transactionDTO, "user-jwt-token");
+        CreateTransactionResponseDTO transactionResponse = transactionService.makeTransaction(transactionDTO);
 
-        when(transactionService.makeTransaction(any(CreateTransactionDTO.class), any(String.class)))
+        when(transactionService.makeTransaction(any(CreateTransactionDTO.class)))
                 .thenReturn(transactionResponse);
 
         ResultActions resultActions = mockMvc.perform(get("/transactions/{IBAN}", accounts.get(1).getIBANNo())

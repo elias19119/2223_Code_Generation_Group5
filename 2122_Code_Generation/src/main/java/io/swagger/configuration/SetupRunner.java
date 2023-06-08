@@ -49,28 +49,35 @@ public class SetupRunner implements ApplicationRunner {
         Account employeeAccount = Account.builder().IBANNo("NL21INGB3487394444").accountType(AccountType.CURRENT)
                 .balance(0).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
 
+
         accountRepository.save(bankAccount);
         accountRepository.save(userAccount);
         accountRepository.save(employeeAccount);
 
         User bankUser = User.builder().userName("Bank@g.com").mobileNumber("2266")
-                .firstName("Bank").lastName("bestbank").DateOfBirth("00-00-00").password("bankpass")
+                .firstName("Bank").lastName("bestbank").DateOfBirth("25-12-2002").password("bankpass")
                 .roles(UserRole.BANK).accounts(Collections.singleton(bankAccount))
                 .status(UserStatus.ACTIVE).build();
 
-        User customerUser = User.builder().userName("customer@g.com").mobileNumber("5541")
-                .firstName("john").lastName("doe").DateOfBirth("00-00-00").password("user")
+        User customerUser = User.builder().userName("customer@g.com").mobileNumber("06-45281368 ")
+                .firstName("john").lastName("doe").DateOfBirth("01-05-1999").password("user")
                 .roles(UserRole.CUSTOMER).accounts(Collections.singleton(userAccount))
                 .status(UserStatus.ACTIVE).build();
 
-        User employeeUser = User.builder().userName("employee@g.com").mobileNumber("9423")
-                .firstName("Man").lastName("jan").DateOfBirth("00-00-00").password("user")
+        User employeeUser = User.builder().userName("employee@g.com").mobileNumber("06-38116147 ")
+                .firstName("Man").lastName("jan").DateOfBirth("02-10-1997").password("user")
                 .roles(UserRole.EMPLOYEE).accounts(Collections.singleton(employeeAccount))
+                .status(UserStatus.ACTIVE).build();
+
+        User emptyAccountUser = User.builder().userName("empty@g.com").mobileNumber("06-80331782 ")
+                .firstName("test").lastName("user").DateOfBirth("06-07-1998").password("emptyuser")
+                .roles(UserRole.EMPLOYEE).accounts(null)
                 .status(UserStatus.ACTIVE).build();
 
         userRepository.save(bankUser);
         userRepository.save(customerUser);
         userRepository.save(employeeUser);
+        userRepository.save(emptyAccountUser);
 
         Transaction transaction = Transaction.builder().dateOfTransaction(LocalDate.now())
                 .userId(bankUser.getId()).fromIban("NL82INGB4787393871").toIban("NL82INGB3487393870")

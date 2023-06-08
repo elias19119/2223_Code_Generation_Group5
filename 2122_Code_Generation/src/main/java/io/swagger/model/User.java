@@ -25,23 +25,21 @@ public class User {
     @GeneratedValue
     private UUID id;
 
-    // @NotEmpty(message = "UserName is Required")
+
     @Column(unique = true)
     private String userName;
 
-    // @NotEmpty(message = "Mobile Number is required")
     private String mobileNumber;
 
-    // @NotEmpty(message = "FirstName is required")
+
     private String firstName;
 
-    //@NotEmpty(message = "LastName is required")
     private String lastName;
 
-    //@NotEmpty(message = "Date of birth is required")
+
     private String DateOfBirth;
 
-    // @NotEmpty(message = "Password is required")
+
     private String password;
 
     private UserRole roles;

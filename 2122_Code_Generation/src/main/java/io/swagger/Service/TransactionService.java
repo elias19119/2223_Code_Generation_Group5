@@ -2,6 +2,7 @@ package io.swagger.Service;
 
 import io.swagger.Repository.AccountRepository;
 import io.swagger.Repository.TransactionRepository;
+import io.swagger.Repository.UserRepository;
 import io.swagger.Security.JwtTokenProvider;
 import io.swagger.model.Account;
 import io.swagger.model.DTOs.CreateTransactionDTO;
@@ -15,6 +16,8 @@ import io.swagger.model.Responses.WithdrawMoneyResponseDTO;
 import io.swagger.model.Transaction;
 import io.swagger.model.User;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -33,22 +36,30 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final JwtTokenProvider jwtUtil;
+    private final UserRepository userRepository;
     private EntityManager em;
 
 
-    public CreateTransactionResponseDTO makeTransaction(CreateTransactionDTO transaction, String token) throws Exception {
+    public CreateTransactionResponseDTO makeTransaction(CreateTransactionDTO transaction) throws Exception {
         if (transaction.getTransferAmount() <= 0) {
             throw new Exception("Amount should be greater than zero");
         }
 
-        Optional<User> user = Optional.ofNullable(jwtUtil.getUserFromToken(token)); // change this  to get username from security context
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = null;
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+
+        Optional<User> user = userRepository.findByUserName(username);
         if (!user.isPresent() || !user.get().getStatus().equals(UserStatus.ACTIVE)) {
             throw new Exception("User is not active");
         }
-        // if the user is employee you dont need to check senderIBAN
         Account senderAccount = null;
         for (Account account : user.get().getAccounts()) {
-            if(user.get().getRoles() != UserRole.BANK){
+            if(user.get().getRoles() != UserRole.EMPLOYEE){
                 if (account.getIBANNo().equals(transaction.getSenderIban())) {
                     if (account.getAccountStatus().equals(AccountStatus.ACTIVE)) {
                         senderAccount = account;
@@ -120,78 +131,7 @@ public class TransactionService {
         return transactionResponse;
     }
 
-    public List<Transaction> getAllTransaction() {
-
-        return transactionRepository.findAll();
-    }
-    //get rid of all these methods and combine them into a one method
-    public List<Transaction> findTransactionByIban(String IBAN) throws Exception{
-        List<Transaction> transactions = transactionRepository.findAllByFromIban(IBAN);
-        if(transactions.isEmpty()){
-            throw new Exception("no transactions were found");
-        }
-        return transactions;
-    }
-    public List<Transaction> findByIbanFromAndToDate(String IBAN, LocalDate to, LocalDate from) throws Exception{
-        List<Transaction> transactions = transactionRepository.findByFromIbanAndDateOfTransactionBetween(IBAN, to, from);
-        if(transactions.isEmpty()){
-            throw new Exception("no transactions were between these dates");
-        }
-        return transactions;
-    }
-
-    public List<Transaction> findFromIbanToIban(String senderIBAN, String receiverIBAN) throws Exception {
-        List<Transaction> transactions =  transactionRepository.findAllByFromIbanAndToIban(senderIBAN,receiverIBAN);
-        if(transactions.isEmpty()){
-            throw new Exception("no transactions were found between IBANS");
-        }
-        return transactions;
-    }
-
-    public List<Transaction> findTransferAmountFromIBAN(String IBAN, long amount) throws Exception {
-        List<Transaction> transactions = transactionRepository.findAll();
-        List<Transaction> filteredTransactions = new ArrayList<>();
-        Set<UUID> uniqueTransactionIds = new HashSet<>();
-
-        for (Transaction transaction : transactions) {
-            if (transaction.getFromIban().equals(IBAN)
-                    && transaction.getTransferAmount() == amount) {
-                if (!uniqueTransactionIds.contains(transaction.getId())) {
-                    filteredTransactions.add(transaction);
-                    uniqueTransactionIds.add(transaction.getId());
-                }
-            }
-        }
-
-        if (filteredTransactions.isEmpty()) {
-            throw new Exception("No transactions were found with the amount " + amount +
-                    " from " + IBAN);
-        }
-
-        return filteredTransactions;
-    }
-
-    public List<Transaction> findTransferAmountFromIBANAndToIBAN(String fromIBAN, String toIBAN, long amount) throws Exception {
-        List<Transaction> transactions = transactionRepository.findAll();
-        List<Transaction> filteredTransactions = new ArrayList<>();
-
-        for (Transaction transaction : transactions) {
-            if (transaction.getFromIban().equals(fromIBAN)
-                    && transaction.getToIban().equals(toIBAN)
-                    && transaction.getTransferAmount() == amount) {
-                    filteredTransactions.add(transaction);
-            }
-        }
-
-        if (filteredTransactions.isEmpty()) {
-            throw new Exception("No transactions were found with the amount " + amount +
-                    " from " + fromIBAN + " to " + toIBAN);
-        }
-
-        return filteredTransactions;
-    }
-
-    List<Transaction> findTransactionsByFilters(String fromIBAN, String toIBAN, long amount, LocalDate to, LocalDate from , int offset, int limit) {
+    public List<Transaction> findTransactionsByFilters(String fromIBAN, String toIBAN, Long amount, LocalDate to, LocalDate from , Integer offset, Integer limit) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Transaction> cq = cb.createQuery(Transaction.class);
 
@@ -199,11 +139,28 @@ public class TransactionService {
         List<Predicate> predicates = new ArrayList<>();
 
         if (fromIBAN != null) {
-            predicates.add(cb.equal(transaction.get("fromIBAN"), fromIBAN));
+            predicates.add(cb.equal(transaction.get("fromIban"), fromIBAN));
         }
         if (toIBAN != null) {
-            predicates.add(cb.like(transaction.get("toIBAN"), toIBAN));
+            predicates.add(cb.like(transaction.get("toIban"), toIBAN));
         }
+
+        if (amount != null && amount > 0) {
+            predicates.add(cb.equal(transaction.get("transferAmount"), amount));
+        }
+        if (from != null) {
+            predicates.add(cb.equal(transaction.get("dateOfTransaction"), from));
+        }
+        if (to != null) {
+            predicates.add(cb.equal(transaction.get("dateOfTransaction"), to));
+        }
+
+        if(offset != null && offset > 0 && limit !=null && limit >0){
+            predicates.add(cb.greaterThan(transaction.get("id"),offset));
+            predicates.add(cb.lessThan(transaction.get("id"),limit));
+
+        }
+
         cq.where(predicates.toArray(new Predicate[0]));
 
         return em.createQuery(cq).getResultList();
@@ -215,14 +172,13 @@ public class TransactionService {
     public String depositMoney(DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {
 
         Optional<Account> a = accountRepository.findByIBANNo(depositToCheckingAccountDTO.getIBAN());
-        if(a.isPresent()){
-            a.ifPresent(account -> account.setBalance(account.getBalance() + depositToCheckingAccountDTO.getDepositAmount()));
-            accountRepository.save(a.get());
-            return "Amount" +depositToCheckingAccountDTO.getDepositAmount()+"has been deposited to your account";
-        }
-        else{
+        if(!a.isPresent()){
             throw  new Exception("account was not found");
         }
+        else
+        a.ifPresent(account -> account.setBalance(account.getBalance() + depositToCheckingAccountDTO.getDepositAmount()));
+        accountRepository.save(a.get());
+        return "Amount" +depositToCheckingAccountDTO.getDepositAmount()+"has been deposited to your account";
     }
 
     public WithdrawMoneyResponseDTO withdrawMoney(WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
@@ -243,18 +199,5 @@ public class TransactionService {
         else{
             throw  new Exception("account was not found");
         }
-    }
-
-    public List<Transaction> getTransactionByLimitAndOffset(int offset, int limit) throws Exception {
-        List<Transaction> allTransactions = transactionRepository.findAll(); // Fetch all users from the data source
-        List<Transaction> transactions = new ArrayList<>();
-
-        int endIndex = Math.min(offset + limit, allTransactions.size());
-
-        if (offset < endIndex) {
-            transactions = allTransactions.subList(offset, endIndex);
-        }
-
-        return transactions;
     }
 }

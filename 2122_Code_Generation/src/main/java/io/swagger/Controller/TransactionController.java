@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -35,9 +37,8 @@ public class TransactionController {
     //Employee should be able to do transaction from any account
     //@PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
     public ResponseEntity<CreateTransactionResponseDTO> makeTransaction(@RequestBody CreateTransactionDTO transaction) throws Exception {
-        String token = request.getHeader("Authorization");
         try{
-            return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(transactionService.makeTransaction(transaction, token));
+            return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(transactionService.makeTransaction(transaction));
         }catch (Exception e){
             throw  new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -48,45 +49,15 @@ public class TransactionController {
                                                                        @RequestParam( value = "to" , required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to, @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                        @RequestParam(value = "amount", required = false) Long amount, @RequestParam(value = "offset", required = false) Integer offset,
                                                                        @RequestParam(value = "limit", required = false) Integer limit) throws Exception {
-        //List<Transaction> filteredTransactions = new ArrayList<>();
-        Set<Transaction> filteredTransactions = new HashSet<>();
-        String accept = request.getHeader("Accept");
+        List<Transaction> filteredTransactions = new ArrayList<>();
         try {
-            if (accept != null) {
-                if (amount != null && amount > 0) {
-                    if (receiverIBAN != null) {
-                        filteredTransactions.addAll(transactionService.findTransferAmountFromIBANAndToIBAN(senderIBAN, receiverIBAN, amount));
-                    } else {
-                        filteredTransactions.addAll(transactionService.findTransferAmountFromIBAN(senderIBAN, amount));
-                    }
-                }
-                else
-                    filteredTransactions.addAll(transactionService.findTransactionByIban(senderIBAN));
+            filteredTransactions =  transactionService.findTransactionsByFilters(senderIBAN,receiverIBAN,amount,to,from,offset,limit);
+             return new ResponseEntity<Iterable<Transaction>>(HttpStatus.ACCEPTED).status(200).body(filteredTransactions);
 
 
-                if (from != null && to != null) {
-                    filteredTransactions.addAll(transactionService.findByIbanFromAndToDate(senderIBAN, to, from));
-                }
-
-                if (offset != null && limit != null) {
-                    filteredTransactions.addAll(transactionService.getTransactionByLimitAndOffset(offset, limit));
-                }
-                if(receiverIBAN != null){
-                    filteredTransactions.addAll(transactionService.findFromIbanToIban(senderIBAN,receiverIBAN));
-                }
-
-                if (filteredTransactions.isEmpty()) {
-                    throw new ApiRequestException("No transactions were found", HttpStatus.NOT_FOUND);
-                }
-
-                return new ResponseEntity<Iterable<Transaction>>(HttpStatus.ACCEPTED).status(200).body(filteredTransactions);
-
-            }
         }catch (Exception e){
             throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
-
         }
-        return null;
     }
 
 
@@ -95,7 +66,7 @@ public class TransactionController {
         try{
             return new ResponseEntity<>(HttpStatus.OK).status(200).body(transactionService.depositMoney(depositToCheckingAccountDTO));
         }catch (Exception e){
-            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
+            throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
 

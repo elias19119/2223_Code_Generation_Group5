@@ -21,9 +21,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
-import java.util.Arrays;
-
 @SwaggerDefinition(securityDefinition = @SecurityDefinition(apiKeyAuthDefinitions = {@ApiKeyAuthDefinition(key = "X-Auth-Token",
         in = ApiKeyAuthDefinition.ApiKeyLocation.HEADER, name = "X-Auth-Token")}))
 @Configuration
@@ -98,14 +95,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         authBuilder.authenticationProvider(authProvider());
     }
-
-
-    /*
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
-    }
-
-     */
-
 }

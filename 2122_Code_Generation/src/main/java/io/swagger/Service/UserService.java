@@ -9,6 +9,7 @@ import io.swagger.model.DTOs.UpdateUserDTO;
 import io.swagger.model.Enums.AccountStatus;
 import io.swagger.model.Enums.UserRole;
 import io.swagger.model.Enums.UserStatus;
+import io.swagger.model.Responses.GetUserResponseDTO;
 import io.swagger.model.User;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,11 +27,10 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserService {
 
-    // dont return a password
-    // add DTO to responses name
     private UserRepository userRepository;
     private JwtTokenProvider jwtTokenProvider;
     private AuthenticationManager authenticationManager;
+
     public User creatUser(CreateUserDTO userDto) {
         User user = new User();
         user.setMobileNumber(userDto.getMobileNumber());
@@ -46,14 +45,28 @@ public class UserService {
         return user;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    public List<GetUserResponseDTO> findUsersByFilter(String filter, Integer offset, Integer limit) {
+        List<User> userList;
+        if (filter != null && filter.equals("WITHOUT_ACCOUNTS")) {
+            userList = userRepository.findAll().stream()
+                    .filter(user -> user.getAccounts().isEmpty())
+                    .collect(Collectors.toList());
+        } else {
+            userList = userRepository.findAll();
+        }
 
-    public List<User> getAllUsersWithNoAccount() {
-        return userRepository.findAll().stream().filter(user -> user.getAccounts().size() == 0).collect(Collectors.toList());
-    }
+        if(offset != null  && limit !=null ){
+            int endIndex = Math.min(offset + limit, userList.size());
+            if (offset < endIndex) {
+                userList = userList.subList(offset, endIndex);
+            }
+        }
 
+
+        return userList.stream()
+                .map(this::convertToGetUserResponseDTO)
+                .collect(Collectors.toList());
+    }
     public void updateUser(UUID userid, UpdateUserDTO updateUserDto) throws Exception {
         Optional<User> user = userRepository.findById(userid);
         if (user.isPresent()) {
@@ -71,11 +84,11 @@ public class UserService {
 
     }
 
-    public Optional<User> findUserById(UUID id) throws Exception {
+    public Optional<GetUserResponseDTO> findUserById(UUID id) throws Exception {
 
         Optional<User> user = userRepository.findById(id);
         if(user.isPresent()){
-            return user;
+            return user.map(this::convertToGetUserResponseDTO);
         }
         else
             throw new Exception("user was not found");
@@ -109,15 +122,19 @@ public class UserService {
         }
     }
 
-    public List<User> getUsersByLimitAndOffset(int offset, int limit){
-        List<User> allAccounts = userRepository.findAll(); // Fetch all users from the data source
-        List<User> users = new ArrayList<>();
+    private GetUserResponseDTO convertToGetUserResponseDTO(User user) {
+        GetUserResponseDTO responseDTO = new GetUserResponseDTO();
+        responseDTO.setId(user.getId());
+        responseDTO.setUserName(user.getUserName());
+        responseDTO.setMobileNumber(user.getMobileNumber());
+        responseDTO.setFirstName(user.getFirstName());
+        responseDTO.setLastName(user.getLastName());
+        responseDTO.setDateOfBirth(user.getDateOfBirth());
+        responseDTO.setRoles(user.getRoles());
+        responseDTO.setStatus(user.getStatus());
+        responseDTO.setAccounts(user.getAccounts());
 
-        int endIndex = Math.min(offset + limit, allAccounts.size());
-        if (offset < endIndex) {
-            users = allAccounts.subList(offset, endIndex);
-        }
-        return users;
+        return responseDTO;
     }
 
     /*
