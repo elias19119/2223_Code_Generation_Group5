@@ -24,3 +24,13 @@ Feature: Accounts
     Given User is employee
     When Update the balance of an account with "valid" ID
     Then show http status code 200
+
+  Scenario: Update an account details as an Employee with invalid ID
+    Given User is employee
+    When Update the details of an account with "invalid" ID
+    Then show http status code 400
+
+  Scenario: Delete an account as an Employee
+    Given User is employee
+    When Delete an account
+    Then show http status code 200

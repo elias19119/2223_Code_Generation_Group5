@@ -98,7 +98,7 @@ public class AccountStepDefinitions {
         }
 
     }
-    @When("Update the balance of an account with {string} ID")
+    @When("Update the details of an account with {string} ID")
     public void updateAccountByEmployeeShouldReturnOk(String validity) throws URISyntaxException, JSONException {
         whenEmployeeRequestAllAccounts();
 
@@ -111,6 +111,9 @@ public class AccountStepDefinitions {
         if(validity.equals("valid")){
             Id = account.getString("id");
         }
+        else{
+            Id = "notExist";
+        }
 
         URI uri = new URI(url +"/"+ Id);
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -120,7 +123,28 @@ public class AccountStepDefinitions {
 
         try {
             response = template.exchange(uri, HttpMethod.PUT, updateEntity, String.class);
-        } catch (HttpClientErrorException.Unauthorized exception) {
+        } catch (HttpClientErrorException exception) {
+            response = new ResponseEntity<>(exception.getStatusCode());
+        }
+    }
+    @When("Delete an account")
+    public void deleteAnAccountAsEmployee() throws URISyntaxException, JSONException {
+        whenEmployeeRequestAllAccounts();
+
+        JSONArray result = new JSONArray(responseBody);
+        JSONObject account = result.getJSONObject(1);
+
+        Id = account.getString("id");
+
+        URI uri = new URI(url +"/"+ Id);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", "Bearer " + token);
+
+        entity = new HttpEntity<>("", headers);
+
+        try {
+            response = template.exchange(uri, HttpMethod.DELETE, entity, String.class);
+        } catch (HttpClientErrorException exception) {
             response = new ResponseEntity<>(exception.getStatusCode());
         }
     }
