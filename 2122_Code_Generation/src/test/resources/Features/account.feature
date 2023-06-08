@@ -22,7 +22,7 @@ Feature: Accounts
 
   Scenario: Update an account details as an Employee
     Given User is employee
-    When Update the balance of an account with "valid" ID
+    When Update the details of an account with "valid" ID
     Then show http status code 200
 
   Scenario: Update an account details as an Employee with invalid ID
