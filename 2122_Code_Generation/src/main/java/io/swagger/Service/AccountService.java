@@ -58,17 +58,15 @@ public class AccountService {
 
     public void updateAccount(UUID id, UpdateAccountDTO accountDto) throws Exception {
         Optional<Account> a = accountRepository.findById(id);
-        if (a.isPresent()) {
+        if (!a.isPresent()) {
+            throw new Exception("account was not found");
+        } else
             a.get().setAccountStatus(accountDto.getAccountStatus());
             a.get().setAccountType(accountDto.getAccountType());
             a.get().setAbsoluteLimit(accountDto.getAbsoluteLimit());
             a.get().setTransactionLimit(accountDto.getTransactionLimit());
             a.get().setDayLimit(accountDto.getDayLimit());
             accountRepository.save(a.get());
-        } else {
-            throw new Exception("account was not found");
-        }
-
     }
 
     public Optional<Account> findAccountById(UUID id) throws Exception {
@@ -82,13 +80,11 @@ public class AccountService {
 
     public void deleteAccount(UUID id) throws Exception {
         Optional<Account> a = accountRepository.findById(id);
-        if (a.isPresent()) {
+        if (!a.isPresent()) {
+            throw new Exception("account was not found");
+        } else
             a.get().setAccountStatus(AccountStatus.CLOSED);
             accountRepository.save(a.get());
-        } else {
-            throw new Exception("account was not found");
-        }
-
     }
 
     public String balanceCheck(UUID userId,String IBAN) throws Exception{
@@ -102,22 +98,6 @@ public class AccountService {
             }
         }
         throw new Exception("Account was not found");
-    }
-
-    public List<String> findIbansByFirstNameAndPhoneNumber(String name, String mobileNumber) throws Exception {
-
-        StringBuilder IBAN = new StringBuilder();
-        Optional<User> user = userRepository.findByFirstNameAndMobileNumber(name, mobileNumber);
-        List<String> ibans = new ArrayList<>();
-        if(user.isPresent()){
-            throw  new Exception("No User Found");
-        }
-        for( Account accounts : user.get().getAccounts()){
-            IBAN.append("IBAN: ").append(accounts.getIBANNo());
-            ibans.add(IBAN.toString());
-        }
-
-        return ibans;
     }
     public String generateRandomIBAN() {
         StringBuilder iban = new StringBuilder("NL");

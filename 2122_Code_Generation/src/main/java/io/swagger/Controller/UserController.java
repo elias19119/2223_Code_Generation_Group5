@@ -78,7 +78,17 @@ public class UserController {
         }
     }
 
-
+    @GetMapping("/findUsers")
+    @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
+    public ResponseEntity<Optional<GetUserResponseDTO>> findUserByUsernameAndPhoneNumber(@RequestParam(value = "phoneNumber", required = true) String phoneNumber,
+                                                                                         @RequestParam(value = "userName", required = true) String userName) throws Exception {
+        try {
+            Optional<GetUserResponseDTO> user = userService.findByUserNameAndMobileNumber(userName,phoneNumber);
+            return new ResponseEntity<GetUserResponseDTO>(HttpStatus.OK).status(200).body(user);
+        } catch (Exception e) {
+            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
 }
 
 

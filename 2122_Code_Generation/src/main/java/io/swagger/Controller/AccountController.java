@@ -69,12 +69,6 @@ public class AccountController {
         accountService.deleteAccount(id);
     }
 
-
-    @GetMapping("/accounts/findIbans")
-    public List<String> findIbansByFirstNameAndPhoneNumber(@RequestParam("firstName")String firstName,@RequestParam("phoneNumber") String phoneNumber) throws Exception {
-        return accountService.findIbansByFirstNameAndPhoneNumber(firstName, phoneNumber);
-    }
-
     @GetMapping("/accounts/balance")
     public String balanceCheck(@RequestParam("userId")UUID userId,@RequestParam("IBAN") String IBAN) throws Exception {
         return accountService.balanceCheck(userId, IBAN);

@@ -69,48 +69,43 @@ public class UserService {
     }
     public void updateUser(UUID userid, UpdateUserDTO updateUserDto) throws Exception {
         Optional<User> user = userRepository.findById(userid);
-        if (user.isPresent()) {
-            user.get().setFirstName(updateUserDto.getFirstName());
-            user.get().setLastName(updateUserDto.getLastName());
-            user.get().setUserName(updateUserDto.getUserName());
-            user.get().setMobileNumber(updateUserDto.getMobileNumber());
-            user.get().setDateOfBirth(updateUserDto.getDateOfBirth());
-            user.get().setPassword(updateUserDto.getPassword());
-            user.get().setRoles(updateUserDto.getRoles());
-            user.get().setStatus(updateUserDto.getStatus());
-            userRepository.save(user.get());
-        } else
+        if (!user.isPresent()) {
             throw new Exception("user was not found");
+        } else
+        user.get().setFirstName(updateUserDto.getFirstName());
+        user.get().setLastName(updateUserDto.getLastName());
+        user.get().setUserName(updateUserDto.getUserName());
+        user.get().setMobileNumber(updateUserDto.getMobileNumber());
+        user.get().setDateOfBirth(updateUserDto.getDateOfBirth());
+        user.get().setPassword(updateUserDto.getPassword());
+        user.get().setRoles(updateUserDto.getRoles());
+        user.get().setStatus(updateUserDto.getStatus());
+        userRepository.save(user.get());
 
     }
 
     public Optional<GetUserResponseDTO> findUserById(UUID id) throws Exception {
 
         Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()){
-            return user.map(this::convertToGetUserResponseDTO);
+        if(!user.isPresent()){
+            throw new Exception("user was not found");
         }
         else
-            throw new Exception("user was not found");
+        return user.map(this::convertToGetUserResponseDTO);
 
-    }
-
-    public Optional<User> findUserByUserName(String name) throws Exception {
-
-        return Optional.ofNullable(userRepository.findByUserName(name)
-                .orElseThrow(() -> new Exception("User not found with username: " + name)));
     }
 
     public void deleteUser(UUID id) throws Exception {
         Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            user.get().setStatus(UserStatus.valueOf("DELETED"));
-            for (Account a : user.get().getAccounts()) {
-               a.setAccountStatus(AccountStatus.CLOSED);
-            }
-            userRepository.save(user.get());
-        } else
+        if (!user.isPresent()) {
             throw new Exception("user was not found");
+        } else
+            user.get().setStatus(UserStatus.valueOf("DELETED"));
+             for (Account a : user.get().getAccounts()) {
+                a.setAccountStatus(AccountStatus.CLOSED);
+             }
+            userRepository.save(user.get());
+
     }
 
     public String login(AuthenticationDTO loginDto) {
@@ -137,11 +132,16 @@ public class UserService {
         return responseDTO;
     }
 
-    /*
-    public Optional<User> findUserByUserNameAndPhoneNumber(String name, String mobileNumber) {
-        return userRepository.findByFirstNameAndMobileNumber(name, mobileNumber);
+
+    public Optional<GetUserResponseDTO> findByUserNameAndMobileNumber(String name, String mobileNumber) throws Exception {
+
+        Optional<User> user =  userRepository.findByuserNameAndMobileNumber(name, mobileNumber);
+        if (!user.isPresent()){
+            throw  new Exception("user was not found");
+        }
+        else
+            return user.map(this::convertToGetUserResponseDTO);
+
     }
 
-
-     */
 }
