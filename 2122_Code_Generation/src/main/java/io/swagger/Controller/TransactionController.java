@@ -45,7 +45,7 @@ public class TransactionController {
     }
 
     @GetMapping("/{IBAN}")
-    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
     public ResponseEntity<Iterable<Transaction>> getTransactionsByIBAN(@PathVariable("IBAN") String senderIBAN, @RequestParam(value = "ReceiverIBAN", required = false) String receiverIBAN,
                                                                        @RequestParam( value = "to" , required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to, @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                        @RequestParam(value = "amount", required = false) Long amount, @RequestParam(value = "offset", required = false) Integer offset,
@@ -61,9 +61,22 @@ public class TransactionController {
         }
     }
 
+    @GetMapping("")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
+    public ResponseEntity<Iterable<Transaction>> getAllTransactions() throws Exception {
+        try {
+
+            return new ResponseEntity<Iterable<Transaction>>(HttpStatus.ACCEPTED).status(200).body(transactionService.findAllTransactions());
+
+
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     @PostMapping("/deposit")
-    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
     public ResponseEntity<String> deposit(@RequestBody DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {
         try{
             return new ResponseEntity<String>(HttpStatus.OK).status(200).body(transactionService.depositMoney(depositToCheckingAccountDTO));
@@ -73,7 +86,7 @@ public class TransactionController {
     }
 
     @PostMapping("/withdraw")
-    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
     public ResponseEntity<WithdrawMoneyResponseDTO> withdraw(@RequestBody WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
         try {
             return new ResponseEntity<WithdrawMoneyResponseDTO>(HttpStatus.ACCEPTED).status(200).body(transactionService.withdrawMoney(withdrawMoneyDTO));

@@ -130,6 +130,9 @@ public class TransactionService {
 
         return transactionResponse;
     }
+    public List<Transaction> findAllTransactions(){
+       return transactionRepository.findAll();
+    }
 
     public List<Transaction> findTransactionsByFilters(String fromIBAN, String toIBAN, Long amount, LocalDate to, LocalDate from , Integer offset, Integer limit) {
         CriteriaBuilder cb = em.getCriteriaBuilder();

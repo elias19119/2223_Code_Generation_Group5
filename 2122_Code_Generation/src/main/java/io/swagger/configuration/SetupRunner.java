@@ -82,7 +82,13 @@ public class SetupRunner implements ApplicationRunner {
         Transaction transaction = Transaction.builder().dateOfTransaction(LocalDate.now())
                 .userId(bankUser.getId()).fromIban("NL82INGB4787393871").toIban("NL82INGB3487393870")
                 .transferAmount(100).build();
+
+        Transaction employeeTransaction = Transaction.builder().dateOfTransaction(LocalDate.now())
+                .userId(employeeUser.getId()).fromIban("NL21INGB3487394444").toIban("NL82INGB3487393870")
+                .transferAmount(100).build();
+
         transactionRepository.save(transaction);
+        transactionRepository.save(employeeTransaction);
     }
 
 }
