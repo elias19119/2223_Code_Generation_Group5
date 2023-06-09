@@ -3,7 +3,11 @@ package io.swagger.model.DTOs;
 
 import io.swagger.model.Enums.AccountStatus;
 import io.swagger.model.Enums.AccountType;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class UpdateAccountDTO {
     private AccountType accountType;
 

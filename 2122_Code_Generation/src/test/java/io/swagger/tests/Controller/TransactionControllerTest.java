@@ -43,6 +43,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,7 +59,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(TransactionController.class)
 @Import(TransactionController.class)
-@AutoConfigureMockMvc
 @ContextConfiguration(classes= WebApplicationContext.class)
 public class TransactionControllerTest {
     @Autowired
@@ -162,10 +162,10 @@ public class TransactionControllerTest {
         List<Account> a = new ArrayList<>();
         //Bank account NL01INHO0000000001
 
-        Account account1 = Account.builder().id(UUID.randomUUID()).IBANNo("NL01INHO0000000001").accountType(AccountType.CURRENT).balance(2500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
+        Account account1 = Account.builder().id(UUID.randomUUID()).IBANNo("NL01INHO0000000001").accountType(AccountType.CURRENT).balance(2500).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
         //Accounts generated with random IBAN
-        Account account2 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
-        Account account3 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
+        Account account2 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
+        Account account3 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
 
         accounts.add(account1);
         accounts.add(account2);

@@ -61,8 +61,6 @@ public class UserService {
                 userList = userList.subList(offset, endIndex);
             }
         }
-
-
         return userList.stream()
                 .map(this::convertToGetUserResponseDTO)
                 .collect(Collectors.toList());
@@ -78,7 +76,6 @@ public class UserService {
         user.get().setMobileNumber(updateUserDto.getMobileNumber());
         user.get().setDateOfBirth(updateUserDto.getDateOfBirth());
         user.get().setPassword(updateUserDto.getPassword());
-        user.get().setRoles(updateUserDto.getRoles());
         user.get().setStatus(updateUserDto.getStatus());
         userRepository.save(user.get());
 

@@ -38,6 +38,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AccountController.class)
 @Import(AccountController.class)
-@AutoConfigureMockMvc
 @ContextConfiguration(classes= WebApplicationContext.class)
 class AccountControllerTest {
 
@@ -91,7 +91,7 @@ class AccountControllerTest {
     @WithMockUser(username = "employee", roles = {"EMPLOYEE", "CUSTOMERS"})
     @Test
     public void getAllAccountsShouldReturnJsonArray() throws Exception{
-        Mockito.when(accountService.getAllAccounts())
+        Mockito.when(accountService.findAccountsByFilter(null,null))
                 .thenReturn(accounts);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/accounts"))
@@ -99,13 +99,13 @@ class AccountControllerTest {
                 .andExpect(jsonPath("$", Matchers.hasSize(3)))
                 .andReturn();
 
-        Mockito.verify(accountService, Mockito.times(1)).getAllAccounts();
+        Mockito.verify(accountService, Mockito.times(1)).findAccountsByFilter(null,null);
     }
 
     @WithMockUser(username = "employee", roles = {"EMPLOYEE", "CUSTOMERS"})
     @Test
     public void getAllAccountsShouldReturnOk() throws Exception{
-        Mockito.when(accountService.getAllAccounts())
+        Mockito.when(accountService.findAccountsByFilter(null,null))
                 .thenReturn(accounts);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/accounts"))
@@ -124,7 +124,7 @@ class AccountControllerTest {
     @WithMockUser(username = "employee", roles = {"EMPLOYEE", "CUSTOMERS"})
     @Test
     public void creatingAnAccountReturnsCreated() throws Exception {
-        Account account = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
+        Account account = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
         ObjectMapper objectMapper = new ObjectMapper();
         //register the jackson-datatype-jsr310 module
         objectMapper.registerModule(new JavaTimeModule());
@@ -178,10 +178,10 @@ class AccountControllerTest {
         List<Account> a = new ArrayList<>();
         //Bank account NL01INHO0000000001
 
-        Account account1 = Account.builder().id(UUID.randomUUID()).IBANNo("NL01INHO0000000001").accountType(AccountType.CURRENT).balance(2500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
+        Account account1 = Account.builder().id(UUID.randomUUID()).IBANNo("NL01INHO0000000001").accountType(AccountType.CURRENT).balance(2500).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
         //Accounts generated with random IBAN
-        Account account2 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
-        Account account3 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDateTime.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
+        Account account2 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
+        Account account3 = Account.builder().id(UUID.randomUUID()).IBANNo(accountService.generateRandomIBAN()).accountType(AccountType.CURRENT).balance(500).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(20).dayLimit(2000).absoluteLimit(100).build();
 
         accounts.add(account1);
         accounts.add(account2);

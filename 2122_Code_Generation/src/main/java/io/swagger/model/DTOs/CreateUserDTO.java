@@ -2,7 +2,11 @@ package io.swagger.model.DTOs;
 
 
 import io.swagger.model.Enums.UserStatus;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class CreateUserDTO {
 
     private String userName;
@@ -24,20 +28,6 @@ public class CreateUserDTO {
     private String roles;
 
     private UserStatus status;
-
-    public CreateUserDTO(String userName, String mobileNumber, String firstName, String lastName, String dateOfBirth, String password, String roles, UserStatus status) {
-        this.userName = userName;
-        this.mobileNumber = mobileNumber;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        DateOfBirth = dateOfBirth;
-        this.password = password;
-        this.roles = roles;
-        this.status = status;
-    }
-
-    public CreateUserDTO() {
-    }
 
     public String getUserName() {
         return userName;

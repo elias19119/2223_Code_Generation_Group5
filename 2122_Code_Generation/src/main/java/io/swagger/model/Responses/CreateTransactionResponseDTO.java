@@ -1,8 +1,13 @@
 package io.swagger.model.Responses;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class CreateTransactionResponseDTO {
 
     private UUID id;

@@ -1,5 +1,10 @@
 package io.swagger.model.DTOs;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
 public class WithdrawMoneyDTO {
     private String  IBAN;
     private long amount;

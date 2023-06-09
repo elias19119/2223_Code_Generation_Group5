@@ -12,7 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -33,7 +33,7 @@ public class Account {
 
     private long balance;
 
-    private LocalDateTime dateOfOpening;
+    private LocalDate dateOfOpening;
 
     private AccountStatus accountStatus;
 
@@ -75,11 +75,11 @@ public class Account {
         this.balance = balance;
     }
 
-    public LocalDateTime getDateOfOpening() {
+    public LocalDate getDateOfOpening() {
         return dateOfOpening;
     }
 
-    public void setDateOfOpening(LocalDateTime dateOfOpening) {
+    public void setDateOfOpening(LocalDate dateOfOpening) {
         this.dateOfOpening = dateOfOpening;
     }
 

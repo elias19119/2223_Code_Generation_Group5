@@ -1,17 +1,14 @@
 package io.swagger.model.DTOs;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
 public class AuthenticationDTO {
 
     private String username;
     private String password;
-
-    public AuthenticationDTO(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-
-    public AuthenticationDTO() {
-    }
 
     public String getUserName() {
         return username;

@@ -1,6 +1,7 @@
 package io.swagger.Controller;
 
 import io.swagger.Service.AccountService;
+import io.swagger.exceptions.ApiRequestException;
 import io.swagger.model.Account;
 import io.swagger.model.DTOs.CreateAccountDTO;
 import io.swagger.model.DTOs.UpdateAccountDTO;
@@ -27,11 +28,12 @@ public class AccountController {
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
     public ResponseEntity<Iterable<Account>> fetchAllAccounts(@RequestParam(value = "offset", required = false) Integer offset,
                                                          @RequestParam(value = "limit", required = false) Integer limit)  {
-        if (request.getParameter("offset") != null && request.getParameter("limit") != null) {
-            return new ResponseEntity<>(HttpStatus.OK).status(200).body(accountService.getAccountsByLimitAndOffset(offset, limit));
-        } else {
-            return new ResponseEntity<>(HttpStatus.OK).status(200).body(accountService.getAllAccounts());
-        }
+       try {
+           return new ResponseEntity<>(HttpStatus.OK).status(200).body(accountService.findAccountsByFilter(offset,limit));
+
+       }catch (Exception e){
+           throw new ApiRequestException(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+       }
     }
 
     @GetMapping("/accounts/{id}")
@@ -41,37 +43,54 @@ public class AccountController {
            return new ResponseEntity<Account>(HttpStatus.OK).status(200).body(accountService.findAccountById(id).get());
 
         }catch (Exception e){
-            return new ResponseEntity<Account>(HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
 
 
     @PostMapping("/accounts")
-    // @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
+     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
     public ResponseEntity<Account> createAccount(@RequestBody CreateAccountDTO account) throws Exception {
         try{
             return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(accountService.AddAccount(account));
         }
         catch (Exception e){
-            return new ResponseEntity<Account>(HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping("/accounts/{id}")
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
-    public void updateAccount(@PathVariable UUID id, @RequestBody UpdateAccountDTO account) throws Exception {
-        accountService.updateAccount(id, account);
+    public ResponseEntity<Void> updateAccount(@PathVariable UUID id, @RequestBody UpdateAccountDTO account) throws Exception {
+        try {
+            accountService.updateAccount(id, account);
+            return new ResponseEntity<Void>(HttpStatus.OK);
+
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("/accounts/{id}")
     @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
-    public void deleteAccount(@PathVariable("id") UUID id) throws Exception {
-        accountService.deleteAccount(id);
+    public ResponseEntity<Void> deleteAccount(@PathVariable("id") UUID id) throws Exception {
+        try {
+            accountService.deleteAccount(id);
+            return new ResponseEntity<Void>(HttpStatus.OK);
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/accounts/balance")
-    public String balanceCheck(@RequestParam("userId")UUID userId,@RequestParam("IBAN") String IBAN) throws Exception {
-        return accountService.balanceCheck(userId, IBAN);
+    @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
+    public ResponseEntity<String> balanceCheck(@RequestParam("userId")UUID userId,@RequestParam("IBAN") String IBAN) throws Exception {
+        try {
+            return new ResponseEntity<String>(HttpStatus.CREATED).status(200).body(accountService.balanceCheck(userId,IBAN));
+
+        }catch (Exception e){
+            throw new ApiRequestException(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
     }
 
 }

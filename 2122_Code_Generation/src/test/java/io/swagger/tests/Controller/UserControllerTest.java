@@ -37,7 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(UserController.class)
 @Import(UserController.class)
-@AutoConfigureMockMvc
 @ContextConfiguration(classes= WebApplicationContext.class)
 public class UserControllerTest {
 

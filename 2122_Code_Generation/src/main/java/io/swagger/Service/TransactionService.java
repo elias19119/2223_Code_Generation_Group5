@@ -165,10 +165,6 @@ public class TransactionService {
 
         return em.createQuery(cq).getResultList();
     }
-
-
-
-    // change from isPresent() to !isPresent()
     public String depositMoney(DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {
 
         Optional<Account> a = accountRepository.findByIBANNo(depositToCheckingAccountDTO.getIBAN());

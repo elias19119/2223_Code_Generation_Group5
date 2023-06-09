@@ -2,20 +2,17 @@ package io.swagger.model.DTOs;
 
 
 import io.swagger.model.Enums.AccountType;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class CreateAccountDTO {
     private UUID userId;
     private AccountType accountType;
 
-    public CreateAccountDTO(UUID userId, AccountType accountType) {
-        this.userId = userId;
-        this.accountType = accountType;
-    }
-
-    public CreateAccountDTO() {
-    }
 
     public UUID getUserId() {
         return userId;

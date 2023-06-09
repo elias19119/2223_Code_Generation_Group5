@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -34,8 +35,7 @@ public class TransactionController {
     private final HttpServletRequest request;
 
     @PostMapping
-    //Employee should be able to do transaction from any account
-    //@PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER','ROLE_EMPLOYEE')")
     public ResponseEntity<CreateTransactionResponseDTO> makeTransaction(@RequestBody CreateTransactionDTO transaction) throws Exception {
         try{
             return new ResponseEntity<>(HttpStatus.CREATED).status(201).body(transactionService.makeTransaction(transaction));
@@ -45,6 +45,7 @@ public class TransactionController {
     }
 
     @GetMapping("/{IBAN}")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
     public ResponseEntity<Iterable<Transaction>> getTransactionsByIBAN(@PathVariable("IBAN") String senderIBAN, @RequestParam(value = "ReceiverIBAN", required = false) String receiverIBAN,
                                                                        @RequestParam( value = "to" , required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to, @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                        @RequestParam(value = "amount", required = false) Long amount, @RequestParam(value = "offset", required = false) Integer offset,
@@ -62,15 +63,17 @@ public class TransactionController {
 
 
     @PostMapping("/deposit")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
     public ResponseEntity<String> deposit(@RequestBody DepositToCheckingAccountDTO depositToCheckingAccountDTO) throws Exception {
         try{
-            return new ResponseEntity<>(HttpStatus.OK).status(200).body(transactionService.depositMoney(depositToCheckingAccountDTO));
+            return new ResponseEntity<String>(HttpStatus.OK).status(200).body(transactionService.depositMoney(depositToCheckingAccountDTO));
         }catch (Exception e){
             throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping("/withdraw")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
     public ResponseEntity<WithdrawMoneyResponseDTO> withdraw(@RequestBody WithdrawMoneyDTO withdrawMoneyDTO) throws Exception {
         try {
             return new ResponseEntity<WithdrawMoneyResponseDTO>(HttpStatus.ACCEPTED).status(200).body(transactionService.withdrawMoney(withdrawMoneyDTO));

@@ -9,12 +9,15 @@ import io.swagger.model.DTOs.UpdateAccountDTO;
 import io.swagger.model.Enums.AccountStatus;
 import io.swagger.model.Enums.AccountType;
 import io.swagger.model.Enums.UserStatus;
+import io.swagger.model.Responses.GetUserResponseDTO;
 import io.swagger.model.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -22,10 +25,6 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
-
-    public List<Account> getAllAccounts() {
-        return accountRepository.findAll();
-    }
 
     public Account AddAccount(CreateAccountDTO accountDto) throws Exception {
         Optional<User> user = userRepository.findById(accountDto.getUserId());
@@ -42,7 +41,7 @@ public class AccountService {
                 account.setBalance(0);
                 account.setAbsoluteLimit(5000);
                 account.setTransactionLimit(3000);
-                account.setDateOfOpening(LocalDateTime.now());
+                account.setDateOfOpening(LocalDate.now());
                 account.setAccountType(accountDto.getAccountType());
                 account.setAccountStatus(AccountStatus.ACTIVE);
                 account.setDayLimit(1000);
@@ -117,14 +116,16 @@ public class AccountService {
         return iban.toString();
     }
 
-    public List<Account> getAccountsByLimitAndOffset(int offset, int limit){
-        List<Account> allAccounts = accountRepository.findAll(); // Fetch all users from the data source
-        List<Account> accounts = new ArrayList<>();
+    public List<Account> findAccountsByFilter(Integer offset, Integer limit) {
+        List<Account> accountList;
+        accountList = accountRepository.findAll();
 
-        int endIndex = Math.min(offset + limit, allAccounts.size());
-        if (offset < endIndex) {
-            accounts = allAccounts.subList(offset, endIndex);
+        if(offset != null  && limit !=null ){
+            int endIndex = Math.min(offset + limit, accountList.size());
+            if (offset < endIndex) {
+                accountList = accountList.subList(offset, endIndex);
+            }
         }
-        return accounts;
+        return accountList;
     }
 }

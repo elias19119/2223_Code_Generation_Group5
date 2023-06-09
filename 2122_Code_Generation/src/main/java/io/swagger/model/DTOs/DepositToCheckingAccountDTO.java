@@ -1,7 +1,12 @@
 package io.swagger.model.DTOs;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import java.util.UUID;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class DepositToCheckingAccountDTO {
 
     private String IBAN;

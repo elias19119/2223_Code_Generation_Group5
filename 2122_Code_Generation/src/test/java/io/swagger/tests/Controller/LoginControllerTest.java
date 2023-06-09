@@ -32,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(LoginController.class)
 @Import(LoginController.class)
-@AutoConfigureMockMvc
 @ContextConfiguration(classes= WebApplicationContext.class)
 public class LoginControllerTest {
 

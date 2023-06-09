@@ -19,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "http://localhost:8082")  // <- use your url of frontend
+@CrossOrigin("*")
 public class UserController {
     private final UserService userService;
 
@@ -35,8 +35,7 @@ public class UserController {
 
         List<GetUserResponseDTO> filteredUsers;
         try{
-            filteredUsers = userService.findUsersByFilter(filter,offset,limit);
-            return new ResponseEntity<>(HttpStatus.OK).status(200).body(filteredUsers);
+            return new ResponseEntity<>(HttpStatus.OK).status(200).body(userService.findUsersByFilter(filter,offset,limit));
         }catch (Exception e){
             throw new ApiRequestException(e.getMessage(),HttpStatus.BAD_REQUEST);
 
@@ -57,6 +56,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
     public ResponseEntity<GetUserResponseDTO> getUserById(@PathVariable("id") UUID id) throws Exception {
         try {
             Optional<GetUserResponseDTO> user = userService.findUserById(id);

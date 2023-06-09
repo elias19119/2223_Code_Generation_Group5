@@ -50,7 +50,6 @@ public class LoginController {
     }
 
     @PostMapping("/register")
-    // @PreAuthorize("hasAnyRole('ROLE_BANK','ROLE_EMPLOYEE')")
     public ResponseEntity<User> createUser(@RequestBody CreateUserDTO userDTO) throws Exception {
         if(userDTO.getUserName() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
