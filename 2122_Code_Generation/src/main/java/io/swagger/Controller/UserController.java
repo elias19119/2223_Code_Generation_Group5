@@ -56,7 +56,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    //@PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<GetUserResponseDTO> getUserById(@PathVariable("id") UUID id) throws Exception {
         try {
             Optional<GetUserResponseDTO> user = userService.findUserById(id);
