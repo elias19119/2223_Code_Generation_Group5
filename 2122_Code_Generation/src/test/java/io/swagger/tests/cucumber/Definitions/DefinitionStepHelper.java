@@ -12,6 +12,7 @@ import io.swagger.model.Enums.AccountType;
 import io.swagger.model.Enums.UserRole;
 import io.swagger.model.Enums.UserStatus;
 import io.swagger.model.User;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mockito.Mock;
@@ -27,9 +28,10 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @Component
 public class DefinitionStepHelper {
@@ -39,10 +41,11 @@ public class DefinitionStepHelper {
     private RestTemplate template = new RestTemplate();
     private HttpEntity<String> entity;
     private ResponseEntity<String> response;
-    private String token;
+    private String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlbXBsb3llZUBnLmNvbSIsImF1dGgiOnsiYXV0aG9yaXR5IjoiRU1QTE9ZRUUifSwiaWF0IjoxNjg2MzM5ODQ3LCJleHAiOjE2ODYzNDM0NDd9.GoIpsX2r0JafiwZO0YdPmqVPVlBnRtwVAIlM0P3GTbg";
     private String responseBody;
     User createdUser;
 
+    public String CheckBalanceUrl = "http://localhost:8080/api/accounts/balance";
     @Mock
     private UserRepository userRepository;
 
@@ -58,7 +61,7 @@ public class DefinitionStepHelper {
         response= template.postForEntity(uri, entity, String.class);
 
         JSONObject jsonObject = new JSONObject(response.getBody());
-        token = jsonObject.getString("bearerToken");
+        this.token = jsonObject.getString("bearerToken");
         return response;
     }
     public User registerRandomUser(String token) throws URISyntaxException, JsonProcessingException {
@@ -82,11 +85,16 @@ public class DefinitionStepHelper {
 
         return createdUser;
     }
-    public String getUserDetailsAsJson(String token) throws URISyntaxException {
+    public String getUserDetailsAsJson(String token) throws URISyntaxException, JSONException, JsonProcessingException {
+        ResponseEntity<String> tokenResponse = validateLogin("employee@g.com", "user");
         URI uri = new URI("http://localhost:8080/api/users");
 
+        String responseBody = tokenResponse.getBody();
+        JSONObject jsonObject = new JSONObject(responseBody);
+        String userToken = jsonObject.getString("bearerToken");
+
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Authorization", "Bearer " + token);
+        headers.add("Authorization", "Bearer " + userToken);
 
         entity = new HttpEntity<>(headers);
 
@@ -94,16 +102,22 @@ public class DefinitionStepHelper {
         responseBody = response.getBody();
         return responseBody;
     }
-    public void getUserByUsername(String responseBody, String username){
-        Account account1 = setAccount("NL82INGB4787396659");
-        Account account2 = setAccount("NL82INGB4787398853");
-        User user1 = setUser("customer12@g.com", UserRole.CUSTOMER, Collections.singleton(account1));
-        User user2 = setUser("customer13@g.com", UserRole.CUSTOMER, Collections.singleton(account2));
+    public String getUserIDAndIBANBalanceByUsername(String username) throws JSONException, URISyntaxException, JsonProcessingException {
+        String response = getUserDetailsAsJson(this.token);
+        JSONArray usersArray = new JSONArray(response);
 
-        //MockitoAnnotations.openMocks(this);
-        when(userRepository.findByUserName(anyString())).thenReturn(Optional.of(user1));
-        Optional<User> result = userRepository.findByUserName(username);
-        String s = "";
+        for (int i = 0; i < usersArray.length(); i++) {
+            JSONObject userObject = usersArray.getJSONObject(i);
+            String userName = userObject.getString("userName");
+            if (userName.equals(username)) {
+                JSONArray accountOfUser =  new JSONArray(userObject.getString("accounts"));
+                JSONObject account = accountOfUser.getJSONObject(0);
+                String IBAN = account.getString("ibanno");
+                String balance = account.getString("balance");
+                return userObject.getString("id") + "/" + IBAN +"/"+balance;
+            }
+        }
+        return  "";
     }
 
     private User setUser(String username, UserRole role, Set<Account> account){

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.swagger.model.DTOs.AuthenticationDTO;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpEntity;
@@ -13,8 +14,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.constraints.AssertTrue;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 public class TransactionStepDefinitions {
     private String port = "8080";
@@ -34,13 +38,15 @@ public class TransactionStepDefinitions {
     public void userIsCustomer() throws JSONException, URISyntaxException, JsonProcessingException {
         AuthenticationDTO loginDto = new AuthenticationDTO(customerUsername, customerPassword);
         validateLogin(loginDto);
-        //stepHelper.getUserByUsername(customerUsername);
-        String asd = "";
     }
 
-    @And("User has {string} balance in their account to transfer {int}")
-    public void checkForSufficientFund(String sufficiency, int amount){
+    @And("User has balance in their account to transfer {int}")
+    public void checkForSufficientFund(int amount) throws JSONException, URISyntaxException, JsonProcessingException {
+        String input = stepHelper.getUserIDAndIBANBalanceByUsername(customerUsername);
+        String[] userAccountDetails = input.split("/");
+        int employeeBalance = Integer.parseInt(userAccountDetails[2]);
 
+        assertTrue("Employee have sufficient fund", employeeBalance >= amount);
     }
     public void validateLogin(AuthenticationDTO loginDto) throws URISyntaxException, JsonProcessingException, JSONException {
 
