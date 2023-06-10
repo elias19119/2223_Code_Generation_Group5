@@ -23,7 +23,7 @@ import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 public class TransactionStepDefinitions {
     private String port = "8080";
-    private String customerUsername = "customer@g.com";
+    private String customerUsername = "customer1@g.com";
     private String customerPassword = "user";
     private String token;
     DefinitionStepHelper stepHelper = new DefinitionStepHelper();

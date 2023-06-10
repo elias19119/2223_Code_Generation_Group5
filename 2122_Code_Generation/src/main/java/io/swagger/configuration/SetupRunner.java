@@ -46,12 +46,16 @@ public class SetupRunner implements ApplicationRunner {
         Account userAccount = Account.builder().IBANNo("NL21INGB3487393870").accountType(AccountType.CURRENT)
                 .balance(0).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
 
+        Account userAccount1 = Account.builder().IBANNo("NL21INGB3487396154").accountType(AccountType.CURRENT)
+                .balance(0).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
+
         Account employeeAccount = Account.builder().IBANNo("NL21INGB3487394444").accountType(AccountType.CURRENT)
                 .balance(0).dateOfOpening(LocalDate.now()).accountStatus(AccountStatus.ACTIVE).transactionLimit(1000).absoluteLimit(1000).dayLimit(1000).balance(500).build();
 
 
         accountRepository.save(bankAccount);
         accountRepository.save(userAccount);
+        accountRepository.save(userAccount1);
         accountRepository.save(employeeAccount);
 
         User bankUser = User.builder().userName("Bank@g.com").mobileNumber("2266")
@@ -62,6 +66,11 @@ public class SetupRunner implements ApplicationRunner {
         User customerUser = User.builder().userName("customer@g.com").mobileNumber("06-45281368 ")
                 .firstName("john").lastName("doe").DateOfBirth("01-05-1999").password("user")
                 .roles(UserRole.CUSTOMER).accounts(Collections.singleton(userAccount))
+                .status(UserStatus.ACTIVE).build();
+
+        User customerUser1 = User.builder().userName("customer1@g.com").mobileNumber("06-45281355 ")
+                .firstName("jimmy").lastName("joe").DateOfBirth("01-05-1995").password("user")
+                .roles(UserRole.CUSTOMER).accounts(Collections.singleton(userAccount1))
                 .status(UserStatus.ACTIVE).build();
 
         User employeeUser = User.builder().userName("employee@g.com").mobileNumber("06-38116147 ")
@@ -76,6 +85,7 @@ public class SetupRunner implements ApplicationRunner {
 
         userRepository.save(bankUser);
         userRepository.save(customerUser);
+        userRepository.save(customerUser1);
         userRepository.save(employeeUser);
         userRepository.save(emptyAccountUser);
 
