@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.AssertTrue;
@@ -57,10 +58,14 @@ public class TransactionStepDefinitions {
         assertTrue("Employee have sufficient fund", employeeBalance >= amount);
     }
 
-    @When("User initiates a fund transfer to another account with valid details")
-    public void transactWithValidCredentials() throws JSONException, URISyntaxException, JsonProcessingException {
+    @When("User initiates a fund transfer to another account with {string} details")
+    public void transactWithValidCredentials(String validity) throws JSONException, URISyntaxException, JsonProcessingException {
         String senderInput = stepHelper.getUserIDAndIBANBalanceByUsername(customerUsername);
         String receiverInput = stepHelper.getUserIDAndIBANBalanceByUsername("employee@g.com");
+
+        if(validity.equals("invalid")){
+            receiverInput = stepHelper.getUserIDAndIBANBalanceByUsername("customer@g.com");
+        }
 
         String[] senderAccountDetails = senderInput.split("/");
         String[] receiverAccountDetails = receiverInput.split("/");
@@ -83,8 +88,15 @@ public class TransactionStepDefinitions {
         headers.add("Authorization", "Bearer " + token);
 
         HttpEntity<CreateTransactionDTO> entity = new HttpEntity<>(transactionDTO, headers);
-
-        response = template.postForEntity(uri, entity, String.class);
+        try {
+            if(validity.equals("valid")){
+            response = template.postForEntity(uri, entity, String.class);
+            }else{
+                response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        } catch (HttpClientErrorException.Unauthorized exception) {
+            response = new ResponseEntity<>(exception.getStatusCode());
+        }
     }
     @Then("the transaction is {string}")
     public void transactionResponseStatus(String status){
